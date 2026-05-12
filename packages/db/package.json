@@ -1,0 +1,19 @@
+{
+  "name": "@soap-studio/db",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./queries/*": "./src/queries/*.ts",
+    "./queries/recipes": "./src/queries/recipes.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5"
+  }
+}
