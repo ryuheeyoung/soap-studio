@@ -12,6 +12,7 @@
     "dev:admin": "turbo dev --filter=@soap-studio/admin",
     "build": "turbo build",
     "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
     "seed": "tsx packages/db/src/seed.ts",
     "prepare": "husky"
   },
@@ -21,10 +22,5 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
     "turbo": "^2"
-  },
-  "lint-staged": {
-    "apps/admin/**/*.{ts,tsx}": "eslint --max-warnings=0 --no-warn-ignored",
-    "apps/web/**/*.{ts,tsx}": "eslint --max-warnings=0 --no-warn-ignored",
-    "packages/**/*.{ts,tsx}": "eslint --max-warnings=0 --no-warn-ignored"
   }
 }

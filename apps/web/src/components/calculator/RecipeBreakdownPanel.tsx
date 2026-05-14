@@ -121,15 +121,19 @@ export default function RecipeBreakdownPanel({ recipes, ingredients, molds }: Pr
               <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
                 <p className="mb-2 text-xs text-zinc-400">추천 몰드</p>
                 <ul className="flex flex-col gap-1.5">
-                  {moldRecs.map(({ mold, remainder, fillRatio }) => {
+                  {moldRecs.map(({ molds, remainder, fillRatio }) => {
                     const isFit = Math.abs(remainder) <= 20;
                     const isOver = remainder < 0;
                     const pct = Math.round(fillRatio * 100);
+                    const totalCapacity = molds.reduce((s, m) => s + m.totalCapacity, 0);
+                    const key = molds.map((m) => m.id).join("-");
 
                     return (
-                      <li key={mold.id} className="flex flex-col gap-1">
+                      <li key={key} className="flex flex-col gap-1">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-zinc-700 dark:text-zinc-300">{mold.name}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">
+                            {molds.map((m) => m.name).join(" + ")}
+                          </span>
                           <span
                             className={`text-xs font-medium ${
                               isFit
@@ -157,7 +161,7 @@ export default function RecipeBreakdownPanel({ recipes, ingredients, molds }: Pr
                             />
                           </div>
                           <span className="shrink-0 text-xs tabular-nums text-zinc-400">
-                            {mold.totalCapacity}g · {pct}%
+                            {totalCapacity}g · {pct}%
                           </span>
                         </div>
                       </li>

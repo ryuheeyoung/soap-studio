@@ -31,20 +31,22 @@ export default function MoldPanel({ molds }: Props) {
       </div>
 
       <ul className="flex flex-col gap-2">
-        {recommendations.map(({ mold, fillRatio, remainder }) => {
+        {recommendations.map(({ molds, fillRatio, remainder }) => {
           // fillRatio: 몰드용량/배치용량 — 1.0이 딱 맞음
           const pct = Math.round(fillRatio * 100);
           const isOver = remainder < 0; // 배치가 몰드보다 큼
           const isFit = Math.abs(remainder) <= 20; // ±20g 허용 범위
+          const totalCapacity = molds.reduce((s, m) => s + m.totalCapacity, 0);
+          const key = molds.map((m) => m.id).join("-");
 
           return (
             <li
-              key={mold.id}
+              key={key}
               className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
             >
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  {mold.name}
+                  {molds.map((m) => m.name).join(" + ")}
                 </span>
                 <span
                   className={`text-xs font-semibold ${
@@ -74,9 +76,7 @@ export default function MoldPanel({ molds }: Props) {
               </div>
 
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>
-                  {mold.cellCount}칸 × {mold.weightPerCell}g = {mold.totalCapacity}g
-                </span>
+                <span>총 {totalCapacity}g</span>
                 <span className="tabular-nums">{pct}%</span>
               </div>
             </li>
