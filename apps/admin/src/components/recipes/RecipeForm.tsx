@@ -2,7 +2,7 @@
 
 import { useState, useRef, useTransition } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import type { Recipe, Ingredient, ProcessType, Difficulty, IngredientCategory } from "@soap-studio/types";
+import type { Recipe, Ingredient, ProcessType, Difficulty } from "@soap-studio/types";
 import { PROCESS_TYPE_LABELS, DIFFICULTY_LABELS, INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 
 interface Props {
