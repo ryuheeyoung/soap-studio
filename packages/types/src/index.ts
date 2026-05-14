@@ -1,3 +1,5 @@
+export * from "./constants";
+
 // 제조 방식
 export type ProcessType =
   | 'mp'  // Melt & Pour — 녹여붓기

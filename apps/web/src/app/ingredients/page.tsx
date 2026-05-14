@@ -1,28 +1,6 @@
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
 import type { Ingredient, IngredientCategory } from "@soap-studio/types";
-
-// 카테고리 한글 레이블
-const CATEGORY_LABEL: Record<IngredientCategory, string> = {
-  soap_base: "비누베이스",
-  oil: "오일",
-  butter: "버터",
-  lye: "가성소다/가성가리",
-  water: "수분류",
-  surfactant: "계면활성제",
-  emulsifier: "유화제",
-  powder: "분말류",
-  additive: "첨가물",
-  essential_oil: "에센셜오일",
-  colorant: "색소",
-  other: "기타",
-};
-
-// 카테고리 표시 순서
-const CATEGORY_ORDER: IngredientCategory[] = [
-  "soap_base", "oil", "butter", "lye", "water",
-  "surfactant", "emulsifier", "powder", "additive",
-  "essential_oil", "colorant", "other",
-];
+import { INGREDIENT_CATEGORY_LABELS, INGREDIENT_CATEGORY_ORDER } from "@soap-studio/types";
 
 /**
  * @component
@@ -47,10 +25,10 @@ export default async function IngredientsPage() {
         <p className="text-sm text-zinc-500">등록된 재료가 없어요.</p>
       ) : (
         <div className="flex flex-col gap-5">
-          {CATEGORY_ORDER.filter((cat) => grouped.has(cat)).map((category) => (
+          {INGREDIENT_CATEGORY_ORDER.filter((cat) => grouped.has(cat)).map((category) => (
             <section key={category}>
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                {CATEGORY_LABEL[category]}
+                {INGREDIENT_CATEGORY_LABELS[category]}
               </h2>
               <ul className="flex flex-col gap-1">
                 {grouped.get(category)!.map((ing) => (

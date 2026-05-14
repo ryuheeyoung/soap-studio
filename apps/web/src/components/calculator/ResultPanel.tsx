@@ -5,21 +5,7 @@ import { Copy, Check } from "lucide-react";
 import { useSessionStore } from "@/stores/session";
 import { calculateRequirements } from "@/lib/calculate";
 import type { Recipe, Ingredient, IngredientCategory, PurchaseOption } from "@soap-studio/types";
-
-const CATEGORY_LABEL: Record<IngredientCategory, string> = {
-  soap_base: "비누베이스",
-  oil: "오일",
-  butter: "버터",
-  lye: "가성소다/가성가리",
-  water: "수분류",
-  surfactant: "계면활성제",
-  emulsifier: "유화제",
-  powder: "분말류",
-  additive: "첨가물",
-  essential_oil: "에센셜오일",
-  colorant: "색소",
-  other: "기타",
-};
+import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 
 // 부족량을 최소량으로 커버하는 최적 옵션
 function findBestOption(options: PurchaseOption[], shortage: number): PurchaseOption | null {
@@ -143,7 +129,7 @@ export default function ResultPanel({ recipes, ingredients }: Props) {
                 <div>
                   <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{r.name}</span>
                   <span className="ml-1.5 text-xs text-zinc-400">
-                    {CATEGORY_LABEL[r.category as IngredientCategory] ?? r.category}
+                    {INGREDIENT_CATEGORY_LABELS[r.category as IngredientCategory] ?? r.category}
                   </span>
                 </div>
                 <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold tabular-nums text-red-600 dark:bg-red-900 dark:text-red-400">

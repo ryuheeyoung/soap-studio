@@ -3,6 +3,7 @@
 import { useState, useRef, useTransition } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import type { Recipe, Ingredient, ProcessType, Difficulty, IngredientCategory } from "@soap-studio/types";
+import { PROCESS_TYPE_LABELS, DIFFICULTY_LABELS, INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 
 interface Props {
   action: (formData: FormData) => Promise<void>;
@@ -32,33 +33,6 @@ interface SubstituteRow {
   memo: string;
 }
 
-const PROCESS_TYPE_LABELS: Record<ProcessType, string> = {
-  mp: "MP — 녹여붓기",
-  cp: "CP — 콜드프로세스",
-  hp: "HP — 핫프로세스",
-};
-
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  low: "쉬움",
-  medium: "보통",
-  high: "어려움",
-};
-
-// 재료 카테고리 → 레시피 내 그룹 레이블 매핑
-const CATEGORY_GROUP_LABELS: Record<IngredientCategory, string> = {
-  soap_base: "비누베이스",
-  oil: "오일류",
-  butter: "버터류",
-  lye: "가성소다/가성가리",
-  water: "수분류",
-  surfactant: "계면활성제",
-  emulsifier: "유화제",
-  powder: "분말류",
-  additive: "첨가물",
-  essential_oil: "에센셜오일",
-  colorant: "색소",
-  other: "기타",
-};
 
 /**
  * @component
@@ -75,7 +49,7 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
     return defaultValues.ingredients.map((ing) => {
       const found = allIngredients.find((i) => i.id === ing.ingredientId);
       // 재료 category에서 그룹 레이블 파생 (DB에 저장하지 않음)
-      const groupLabel = found ? CATEGORY_GROUP_LABELS[found.category] : "";
+      const groupLabel = found ? INGREDIENT_CATEGORY_LABELS[found.category] : "";
       return {
         ingredientId: ing.ingredientId,
         newIngredientName: "",
@@ -402,7 +376,7 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
             onSelectIngredient={(ing) => {
               updateIngredientRow(idx, {
                 ingredientId: ing.id,
-                groupLabel: CATEGORY_GROUP_LABELS[ing.category],
+                groupLabel: INGREDIENT_CATEGORY_LABELS[ing.category],
                 unit: ing.unit,
               });
               setIngSearches((prev) => prev.map((s, i) => i === idx ? ing.name : s));

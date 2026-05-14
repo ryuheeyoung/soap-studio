@@ -1,19 +1,13 @@
 import { getAllRecipes } from "@soap-studio/db/queries/recipes";
 import AddToSessionButton from "@/components/recipes/AddToSessionButton";
 import type { Recipe } from "@soap-studio/types";
+import { DIFFICULTY_LABELS } from "@soap-studio/types";
 
 // 제조 방식 뱃지 레이블 및 색상
 const PROCESS_BADGE: Record<Recipe["processType"], { label: string; className: string }> = {
   mp: { label: "M&P", className: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300" },
   cp: { label: "CP", className: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" },
   hp: { label: "HP", className: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300" },
-};
-
-// 난이도 한글 레이블
-const DIFFICULTY_LABEL: Record<string, string> = {
-  low: "쉬움",
-  medium: "보통",
-  high: "어려움",
 };
 
 /**
@@ -69,7 +63,7 @@ export default async function RecipesPage() {
                     {recipe.difficulty && (
                       <>
                         <span>·</span>
-                        <span>{DIFFICULTY_LABEL[recipe.difficulty]}</span>
+                        <span>{recipe.difficulty ? DIFFICULTY_LABELS[recipe.difficulty] : null}</span>
                       </>
                     )}
                   </div>

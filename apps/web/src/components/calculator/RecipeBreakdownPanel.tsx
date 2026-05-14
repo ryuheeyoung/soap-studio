@@ -3,22 +3,7 @@
 import { useSessionStore } from "@/stores/session";
 import { calculateRequirements, recommendMolds } from "@/lib/calculate";
 import type { Recipe, Ingredient, Mold, IngredientCategory } from "@soap-studio/types";
-
-// 카테고리 한글 레이블
-const CATEGORY_LABEL: Record<IngredientCategory, string> = {
-  soap_base: "비누베이스",
-  oil: "오일",
-  butter: "버터",
-  lye: "가성소다/가성가리",
-  water: "수분류",
-  surfactant: "계면활성제",
-  emulsifier: "유화제",
-  powder: "분말류",
-  additive: "첨가물",
-  essential_oil: "에센셜오일",
-  colorant: "색소",
-  other: "기타",
-};
+import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 
 interface Props {
   recipes: Recipe[];
@@ -92,7 +77,7 @@ export default function RecipeBreakdownPanel({ recipes, ingredients, molds }: Pr
                         {r.name}
                       </span>
                       <span className="ml-1.5 text-xs text-zinc-400">
-                        {CATEGORY_LABEL[r.category as IngredientCategory] ?? r.category}
+                        {INGREDIENT_CATEGORY_LABELS[r.category as IngredientCategory] ?? r.category}
                       </span>
                     </div>
 

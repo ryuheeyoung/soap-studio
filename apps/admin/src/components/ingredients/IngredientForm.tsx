@@ -3,29 +3,7 @@
 import { useState, useActionState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { Ingredient } from "@soap-studio/types";
-
-// 재료 카테고리 선택 옵션 목록
-const CATEGORY_OPTIONS: { value: Ingredient["category"]; label: string }[] = [
-  { value: "soap_base", label: "비누베이스" },
-  { value: "oil", label: "오일류" },
-  { value: "butter", label: "버터류" },
-  { value: "lye", label: "가성소다/가성가리" },
-  { value: "water", label: "수분류" },
-  { value: "surfactant", label: "계면활성제" },
-  { value: "emulsifier", label: "유화제" },
-  { value: "powder", label: "분말류" },
-  { value: "additive", label: "첨가물" },
-  { value: "essential_oil", label: "에센셜오일/블렌딩오일" },
-  { value: "colorant", label: "색소" },
-  { value: "other", label: "기타" },
-];
-
-// 단위 선택 옵션 목록
-const UNIT_OPTIONS: { value: Ingredient["unit"]; label: string }[] = [
-  { value: "g", label: "g (그램)" },
-  { value: "ml", label: "ml (밀리리터)" },
-  { value: "ea", label: "ea (개)" },
-];
+import { INGREDIENT_CATEGORY_OPTIONS, INGREDIENT_UNIT_OPTIONS } from "@soap-studio/types";
 
 // 폼 내 구매옵션 행 타입 (key는 클라이언트 임시 식별자)
 interface OptionRow {
@@ -120,7 +98,7 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
           className={inputClass}
         >
           <option value="" disabled>카테고리 선택</option>
-          {CATEGORY_OPTIONS.map((opt) => (
+          {INGREDIENT_CATEGORY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
@@ -140,7 +118,7 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
             onChange={(e) => setUnit(e.target.value)}
             className={inputClass}
           >
-            {UNIT_OPTIONS.map((opt) => (
+            {INGREDIENT_UNIT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
