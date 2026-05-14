@@ -3,7 +3,6 @@
 import { useState, useRef, useTransition } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import type { Recipe, Ingredient, ProcessType, Difficulty, IngredientCategory } from "@soap-studio/types";
-import type { RecipeIngredientInput, RecipeSubstituteInput } from "@soap-studio/db/queries/recipes";
 
 interface Props {
   action: (formData: FormData) => Promise<void>;
