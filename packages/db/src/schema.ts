@@ -1,5 +1,6 @@
 import { pgTable, text, real, integer, boolean } from "drizzle-orm/pg-core";
 
+
 export const ingredients = pgTable("ingredients", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -84,5 +85,14 @@ export const recipeVariationIngredients = pgTable("recipe_variation_ingredients"
   amountNote: text("amount_note"),
   isOptional: boolean("is_optional").notNull().default(false),
   memo: text("memo"),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+// 재료별 구매 옵션 (1:N). 동일 재료를 여러 규격으로 구매 가능
+export const ingredientPurchaseOptions = pgTable("ingredient_purchase_options", {
+  id: text("id").primaryKey(),
+  ingredientId: text("ingredient_id").notNull(),
+  label: text("label").notNull(),      // "30ml 병", "100ml 병"
+  size: real("size").notNull(),        // 베이스 단위 기준 수량 (30, 100)
   sortOrder: integer("sort_order").notNull().default(0),
 });

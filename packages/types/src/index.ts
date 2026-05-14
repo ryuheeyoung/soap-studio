@@ -29,6 +29,18 @@ export type MoldShape = 'rectangle' | 'circle' | 'other';
 export type Difficulty = 'low' | 'medium' | 'high';
 
 /**
+ * @description 재료 구매 옵션. 동일 재료를 여러 규격으로 구매 가능
+ */
+export interface PurchaseOption {
+  id: string;
+  // 표시명 (예: "30ml 병", "100ml 병", "1kg 포대")
+  label: string;
+  // 베이스 단위(g/ml) 기준 수량 (예: 30, 100, 1000)
+  size: number;
+  sortOrder: number;
+}
+
+/**
  * @description 전역 공유 재료 풀. 모든 레시피가 이 목록을 참조함
  */
 export interface Ingredient {
@@ -38,7 +50,8 @@ export interface Ingredient {
   unit: Unit;
   // 현재 보유 재고량
   stock: number;
-  // TODO: 구매 단위 옵션 — 동일 재료가 5ml/10ml/20ml 등 여러 규격으로 판매되는 경우 대응 예정
+  // 구매 옵션 목록 (규격별 구매 단위)
+  purchaseOptions: PurchaseOption[];
   memo?: string;
   createdAt: string;
   updatedAt: string;

@@ -8,7 +8,8 @@ export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30일
  * @returns {string} 세션 토큰
  */
 export function createSessionToken(): string {
-  const secret = process.env.SESSION_SECRET ?? "fallback-secret";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET 환경변수가 설정되지 않았음");
   return Buffer.from(`authenticated:${secret}`).toString("base64");
 }
 

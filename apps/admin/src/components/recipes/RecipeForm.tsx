@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import type { Recipe, Ingredient, ProcessType, Difficulty, IngredientCategory } from "@soap-studio/types";
 import type { RecipeIngredientInput, RecipeSubstituteInput } from "@soap-studio/db/queries/recipes";
@@ -128,6 +128,7 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
   );
 
   const formRef = useRef<HTMLFormElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   // ─── 재료 조작 ────────────────────────────────────────────────────────────
 
@@ -167,7 +168,10 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
 
   // ─── 제출 핸들러 ──────────────────────────────────────────────────────────
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
     // 기존 재료(ingredientId 있음) + 신규 재료(newIngredientName 있음) 통합 직렬화
     // 서버 액션에서 신규 재료를 먼저 생성 후 ID를 확보함
     const ingredients = ingredientRows
@@ -192,7 +196,10 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
 
     formData.set("ingredients", JSON.stringify(ingredients));
     formData.set("substitutes", JSON.stringify(substitutes));
-    await action(formData);
+
+    startTransition(async () => {
+      await action(formData);
+    });
   }
 
   // ─── 재료 자동완성 필터 ───────────────────────────────────────────────────
@@ -209,7 +216,7 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
   const labelCls = "block text-xs font-medium text-zinc-500 mb-1";
 
   return (
-    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* ── 기본 정보 ── */}
       <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">기본 정보</h2>
@@ -488,9 +495,10 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
       {/* ── 제출 버튼 ── */}
       <button
         type="submit"
-        className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        disabled={isPending}
+        className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
       >
-        {submitLabel}
+        {isPending ? "저장 중..." : submitLabel}
       </button>
     </form>
   );

@@ -13,10 +13,9 @@ export interface IngredientResult {
   isSufficient: boolean;
 }
 
-// 몰드 추천 결과
+// 몰드 추천 결과 (단일 또는 조합)
 export interface MoldRecommendation {
-  mold: Mold;
-  // 총 용량 대비 몰드 용량 비율 (1.0 = 딱 맞음)
+  molds: Mold[];
   fillRatio: number;
   remainder: number;
 }
@@ -47,12 +46,8 @@ export function calculateRequirements(
   recipes: Recipe[],
   ingredients: Ingredient[]
 ): IngredientResult[] {
-  // recipeId → Recipe 맵
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
-  // ingredientId → Ingredient 맵
   const ingredientMap = new Map(ingredients.map((i) => [i.id, i]));
-
-  // 재료별 필요량 합산
   const required = new Map<string, number>();
 
   for (const item of items) {
@@ -62,13 +57,11 @@ export function calculateRequirements(
     for (const ing of recipe.ingredients) {
       const amount = getEffectiveAmount(ing);
       if (amount == null) continue;
-
       const scaled = amount * item.scale;
       required.set(ing.ingredientId, (required.get(ing.ingredientId) ?? 0) + scaled);
     }
   }
 
-  // 재고와 비교하여 결과 생성
   const results: IngredientResult[] = [];
 
   for (const [ingredientId, requiredAmount] of required) {
@@ -90,33 +83,70 @@ export function calculateRequirements(
     });
   }
 
-  // 부족한 재료 → 충분한 재료 순, 같은 그룹 내에선 이름 순
   return results.sort((a, b) => {
     if (a.isSufficient !== b.isSufficient) return a.isSufficient ? 1 : -1;
     return a.name.localeCompare(b.name, "ko");
   });
 }
 
+// 배열에서 k개 조합 생성
+function getCombinations<T>(arr: T[], k: number): T[][] {
+  if (k === 0) return [[]];
+  const result: T[][] = [];
+  for (let i = 0; i <= arr.length - k; i++) {
+    for (const combo of getCombinations(arr.slice(i + 1), k - 1)) {
+      result.push([arr[i], ...combo]);
+    }
+  }
+  return result;
+}
+
 /**
  * @function
- * @description 총 배치 용량 기준으로 몰드 적합도 계산 및 추천 목록 반환
- * @param {number} totalBatchSize - 세션 전체 총 배치 용량 (g)
+ * @description 배치 용량 기준 몰드 조합 추천. 단일 몰드부터 최대 3개 조합까지 순서대로 시도하며 딱 맞는 조합 우선 반환
+ * @param {number} totalBatchSize - 배치 총 용량 (g)
  * @param {Mold[]} molds - 전체 몰드 목록
- * @returns {MoldRecommendation[]} 잔량 절댓값 기준 오름차순 정렬된 추천 목록
+ * @returns {MoldRecommendation[]} 잔량 기준 정렬된 추천 목록
  */
-export function recommendMolds(
-  totalBatchSize: number,
-  molds: Mold[]
-): MoldRecommendation[] {
-  if (totalBatchSize <= 0) return [];
+export function recommendMolds(totalBatchSize: number, molds: Mold[]): MoldRecommendation[] {
+  if (totalBatchSize <= 0 || molds.length === 0) return [];
 
+  const maxK = Math.min(3, molds.length);
+
+  for (let k = 1; k <= maxK; k++) {
+    const combos = getCombinations(molds, k).map((moldGroup) => {
+      const totalCapacity = moldGroup.reduce((sum, m) => sum + m.totalCapacity, 0);
+      return {
+        molds: moldGroup,
+        fillRatio: totalCapacity / totalBatchSize,
+        remainder: totalCapacity - totalBatchSize,
+      };
+    });
+
+    const fitting = combos
+      .filter((r) => r.remainder >= 0)
+      .sort((a, b) => a.remainder - b.remainder);
+
+    if (fitting.length > 0) {
+      // 이 단계에서 맞는 조합 발견 — 단일 몰드 초과분도 참고용으로 뒤에 붙임
+      if (k === 1) {
+        const overflowing = combos
+          .filter((r) => r.remainder < 0)
+          .sort((a, b) => b.remainder - a.remainder);
+        return [...fitting, ...overflowing];
+      }
+      return fitting;
+    }
+  }
+
+  // 3개 조합까지 맞는 게 없으면 단일 몰드 중 가장 근접한 것만 반환
   return molds
     .map((mold) => ({
-      mold,
+      molds: [mold],
       fillRatio: mold.totalCapacity / totalBatchSize,
       remainder: mold.totalCapacity - totalBatchSize,
     }))
-    .sort((a, b) => Math.abs(a.remainder) - Math.abs(b.remainder));
+    .sort((a, b) => b.remainder - a.remainder);
 }
 
 /**

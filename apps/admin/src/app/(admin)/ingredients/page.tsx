@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package, PackagePlus, PackageMinus } from "lucide-react";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
 import { deleteIngredientAction } from "@/lib/actions/ingredients";
 import type { Ingredient } from "@soap-studio/types";
@@ -34,13 +34,29 @@ export default async function IngredientsPage() {
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
           재료 관리
         </h1>
-        <Link
-          href="/ingredients/new"
-          className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          <Plus size={15} />
-          재료 추가
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/ingredients/stock-deduct"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            <PackageMinus size={15} />
+            재고 차감
+          </Link>
+          <Link
+            href="/ingredients/stock-adjust"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            <PackagePlus size={15} />
+            재고 추가
+          </Link>
+          <Link
+            href="/ingredients/new"
+            className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            <Plus size={15} />
+            재료 추가
+          </Link>
+        </div>
       </div>
 
       {/* 재료 없을 때 */}
