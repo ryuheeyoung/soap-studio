@@ -2,7 +2,7 @@
 
 DIY 비누 제작을 위한 레시피 · 재료 · 재고 관리 플랫폼.
 
-레시피를 계산기에 담으면 필요한 재료 소요량과 부족 재료를 자동으로 계산해주고, 구매 후 재고 업데이트까지 이어서 처리할 수 있어요.
+레시피를 계산기에 담으면 재료 소요량과 부족 재료를 자동 계산하고, 구매 후 재고 업데이트까지 이어서 처리 가능.
 
 ---
 
@@ -62,14 +62,14 @@ soap-studio/
 ### 설치
 
 ```bash
-git clone https://github.com/your-username/soap-studio.git
+git clone https://github.com/ryuheeyoung/soap-studio.git
 cd soap-studio
 npm install
 ```
 
 ### 환경변수 설정
 
-각 앱 폴더의 `.env.local.example`을 복사해서 `.env.local`을 만들고 실제 값을 채우세요.
+각 앱 폴더의 `.env.local.example`을 복사 후 실제 값 입력.
 
 ```bash
 cp apps/admin/.env.local.example apps/admin/.env.local
@@ -78,14 +78,14 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 **apps/admin/.env.local**
 ```
-DATABASE_URL=           # Neon PostgreSQL 연결 문자열 (관리자 권한)
-ADMIN_PASSWORD=         # 관리자 로그인 비밀번호
-SESSION_SECRET=         # 세션 시크릿 (openssl rand -base64 32 으로 생성)
+DATABASE_URL=     # Neon PostgreSQL 연결 문자열 (관리자 권한)
+ADMIN_PASSWORD=   # 관리자 로그인 비밀번호
+SESSION_SECRET=   # 세션 시크릿 — openssl rand -base64 32 으로 생성 권장
 ```
 
 **apps/web/.env.local**
 ```
-DATABASE_URL=           # Neon PostgreSQL 연결 문자열 (읽기 전용 권한 권장)
+DATABASE_URL=     # Neon PostgreSQL 연결 문자열 (읽기 전용 권한 권장)
 ```
 
 ### DB 마이그레이션 및 시드
@@ -103,19 +103,30 @@ npm run seed
 ### 개발 서버 실행
 
 ```bash
-# 전체 앱 동시 실행
-npm run dev
-
-# 개별 실행
-npm run dev:web    # 공개 앱만
-npm run dev:admin  # 관리자 앱만
+npm run dev          # 전체 앱 동시 실행
+npm run dev:web      # 공개 앱만
+npm run dev:admin    # 관리자 앱만
 ```
+
+---
+
+## 테스트
+
+```bash
+npm run test           # 전체 테스트
+npm run test:coverage  # 커버리지 리포트 (각 앱 디렉터리에서 실행)
+```
+
+- `pre-commit` — ESLint + TypeScript 타입 체크 자동 실행
+- `pre-push` — 전체 테스트 자동 실행
+
+자세한 테스트 전략 및 작성 규칙 → [`docs/testing.md`](docs/testing.md)
 
 ---
 
 ## DB 권한 분리 권장
 
-웹 앱은 읽기 전용 DB 역할을 사용하는 것을 권장합니다.
+웹 앱은 읽기 전용 DB 역할 사용 권장.
 
 ```sql
 -- Neon SQL Editor에서 실행
@@ -125,6 +136,14 @@ GRANT USAGE ON SCHEMA public TO web_reader;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO web_reader;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO web_reader;
 ```
+
+---
+
+## 보안
+
+- 관리자 앱은 미들웨어로 전체 라우트 인증 보호 — 미인증 요청은 `/login`으로 리다이렉트
+- `SESSION_SECRET` 미설정 시 서버 기동 불가 (의도적 설계)
+- 웹 앱 DB 계정은 읽기 전용 역할로 분리 권장
 
 ---
 
