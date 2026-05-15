@@ -21,7 +21,7 @@ export function Table({ className = "", ...props }: HTMLAttributes<HTMLTableElem
   return (
     <table
       className={`w-full text-sm ${className}`}
-      {...(props as object)}
+      {...props}
     />
   );
 }

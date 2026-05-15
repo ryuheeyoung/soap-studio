@@ -140,13 +140,13 @@ export const Disabled: Story = {
 
 | 컴포넌트 | 구현 | Story | 앱 적용 |
 |----------|------|-------|--------|
-| Button | ⬜ | ⬜ | ⬜ |
-| Input | ⬜ | ⬜ | ⬜ |
-| Textarea | ⬜ | ⬜ | ⬜ |
-| Select | ⬜ | ⬜ | ⬜ |
-| Card | ⬜ | ⬜ | ⬜ |
-| AlertPanel | ⬜ | ⬜ | ⬜ |
-| FormLabel | ⬜ | ⬜ | ⬜ |
-| Badge | ⬜ | ⬜ | ⬜ |
-| Table | ⬜ | ⬜ | ⬜ |
+| Button | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
+| Input | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm) |
+| Textarea | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
+| Select | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm) |
+| Card | ✅ | ✅ | ✅ (web: recipes/page) |
+| AlertPanel | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
+| FormLabel | ✅ | ⬜ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
+| Badge | ✅ | ✅ | ✅ (web: recipes/page) |
+| Table | ✅ | ⬜ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
 | SectionHeader | ⬜ | ⬜ | ⬜ |
