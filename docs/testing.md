@@ -14,35 +14,45 @@
        /------\
       /통합테스트\      ← 향후 테스트 DB 구축 후 DB 쿼리 검증
      /----------\
-    /  단위테스트  \    ← 현재 집중 대상 (빠름, 저렴, 안정적)
+    / Storybook  \     ← UI 컴포넌트 시각적 검증 (packages/ui)
    /--------------\
+  /  단위테스트    \   ← 현재 집중 대상 (빠름, 저렴, 안정적)
+ /----------------\
 ```
 
 ### 우선순위 기준
 
-| 테스트 대상 | 우선순위 | 이유 |
+| 테스트 대상 | 우선순위 | 방법 |
 |------------|---------|------|
-| 순수 함수 (비즈니스 로직) | 🔴 높음 | 버그 영향 크고 테스트 작성 용이 |
-| 인증·세션 로직 | 🔴 높음 | 보안 관련, 엣지케이스 다수 |
+| 순수 함수 (비즈니스 로직) | 🔴 높음 | Vitest 단위 테스트 |
+| 인증·세션 로직 | 🔴 높음 | Vitest 단위 테스트 |
+| UI 공유 컴포넌트 | 🔴 높음 | Storybook (packages/ui) |
 | DB 쿼리 / 서버 액션 | 🟡 중간 | 테스트 DB 필요 — 향후 도입 |
-| UI 컴포넌트 렌더링 | 🟢 낮음 | 시각적 검증은 테스트로 한계 존재 |
-| E2E 사용자 시나리오 | 🟢 낮음 | 앱 안정화 후 핵심 플로우 위주 적용 |
+| E2E 사용자 시나리오 | 🟢 낮음 | Playwright — 앱 안정화 후 도입 |
 
 ---
 
 ## 현재 테스트 현황
+
+### 단위 테스트 (Vitest)
 
 | 파일 | 위치 | 테스트 수 | 설명 |
 |------|------|-----------|------|
 | `calculate.ts` | `apps/web/src/lib/__tests__/` | 20개 | 재료 소요량 계산, 몰드 추천, 배치 크기 계산 |
 | `session.ts` | `apps/admin/src/lib/__tests__/` | 13개 | 세션 토큰 생성·검증, 상수 |
 
+### Storybook (UI 컴포넌트)
+
+| 컴포넌트 | Story 수 | 설명 |
+|----------|---------|------|
+| 구현 진행 중 | — | `packages/ui` 신규 작업 — [`docs/ui-package.md`](ui-package.md) 참고 |
+
 ---
 
 ## 테스트 실행
 
 ```bash
-# 전체 테스트 (루트에서)
+# 전체 단위 테스트 (루트에서)
 npm run test
 
 # 파일 변경 감지 모드 (개발 중 사용)
@@ -55,6 +65,9 @@ cd apps/admin && npm run test:coverage
 
 # 브라우저 UI로 결과 확인
 cd apps/web && npm run test:ui
+
+# Storybook 실행 (UI 컴포넌트 시각적 검증)
+cd packages/ui && npm run storybook     # 포트 6006
 ```
 
 ---
@@ -151,6 +164,49 @@ afterEach(() => {
 | Hook | 실행 내용 |
 |------|----------|
 | `pre-commit` | ESLint + TypeScript 타입 체크 |
-| `pre-push` | 전체 테스트 (`npm run test`) |
+| `pre-push` | 전체 단위 테스트 (`npm run test`) |
 
 테스트 실패 시 push 차단.
+
+---
+
+## Storybook 작성 규칙
+
+### 파일 위치
+
+```
+packages/ui/src/stories/
+└── Button.stories.tsx    ← {ComponentName}.stories.tsx
+```
+
+### 필수 Story 구성
+
+공유 컴포넌트를 `packages/ui`에 추가할 때 Story도 반드시 함께 작성.
+
+```tsx
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "../components/Button";
+
+const meta: Meta<typeof Button> = {
+  title: "UI/Button",
+  component: Button,
+  tags: ["autodocs"],  // 자동 문서 생성
+};
+export default meta;
+
+type Story = StoryObj<typeof Button>;
+
+// 각 variant별 story 필수 작성
+export const Primary: Story = { args: { variant: "primary", children: "저장하기" } };
+export const Secondary: Story = { args: { variant: "secondary", children: "취소" } };
+export const Disabled: Story = { args: { variant: "primary", children: "저장 중...", disabled: true } };
+```
+
+### Story 체크리스트
+
+새 컴포넌트 추가 시 아래 기준으로 story 도출.
+
+- [ ] `Default` — 기본 상태
+- [ ] 각 variant별 story (primary/secondary/text 등)
+- [ ] `Disabled` — 비활성 상태 (버튼·입력 컴포넌트)
+- [ ] 다크모드 확인 (`Storybook > Backgrounds` 패널 활용)
