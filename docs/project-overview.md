@@ -12,17 +12,28 @@
 |------|------|
 | 프레임워크 | Next.js 15 (App Router) |
 | 언어 | TypeScript |
-| 스타일링 | Tailwind CSS |
-| 상태관리 | Zustand (전역 상태) + React Query (서버 상태) |
-| DB | Neon (PostgreSQL) + Drizzle ORM — 마이그레이션 예정 (`docs/db-migration.md` 참고) |
-| UI 컴포넌트 | shadcn/ui |
+| 스타일링 | Tailwind CSS v4 |
+| 상태관리 | Zustand (전역 상태) |
+| DB | Neon (PostgreSQL) + Drizzle ORM |
+| UI 컴포넌트 | `@soap-studio/ui` (내부 공유 패키지 + Storybook) |
 | 반응형 | 모바일 우선 (sm/md/lg breakpoint) |
 
 ---
 
 ## 앱 구성
 
-현재는 단일 Next.js 앱. 추후 admin 분리 시 Turborepo 모노레포 전환 예정.
+Turborepo 모노레포. 사용자 앱(web)과 관리자 앱(admin)을 분리하고, 공유 패키지로 타입·DB·UI 컴포넌트를 관리.
+
+```
+soap-studio/
+├── apps/
+│   ├── web/       사용자 앱 — 레시피 열람, 계산기, 재고 현황
+│   └── admin/     관리자 앱 — 재료·레시피·몰드 CRUD, 재고 조정
+└── packages/
+    ├── types/     공유 TypeScript 타입 + 상수 (@soap-studio/types)
+    ├── db/        Drizzle ORM 스키마 & 쿼리 (@soap-studio/db)
+    └── ui/        공유 UI 컴포넌트 라이브러리 + Storybook (@soap-studio/ui)
+```
 
 > 자세한 내용은 `docs/architecture.md` 참고
 
@@ -146,15 +157,14 @@ items[]
 
 ## 작업 마일스톤
 
-> 자세한 내용은 `docs/milestones.md` 참고
-
 | 단계 | 내용 | 상태 |
 |------|------|------|
 | M0 | 프로젝트 초기 설정 및 문서화 | ✅ 완료 |
-| M1 | 공통 레이아웃 & 네비게이션 | 🔄 진행중 |
-| M2 | 재료 관리 CRUD | 🔲 예정 |
-| M3 | 몰드 관리 CRUD | 🔲 예정 |
-| M4 | 레시피 관리 CRUD | 🔲 예정 |
-| M5 | 제작 세션 계산기 | 🔲 예정 |
-| M6 | 세션 저장/불러오기 | 🔲 예정 |
-| M7 | 데이터 영속성 (로컬 → DB 연동) | 🔲 예정 |
+| M1 | 공통 레이아웃 & 네비게이션 | ✅ 완료 |
+| M2 | 재료 관리 CRUD (admin) | ✅ 완료 |
+| M3 | 몰드 관리 CRUD (admin) | ✅ 완료 |
+| M4 | 레시피 관리 CRUD (admin) | ✅ 완료 |
+| M5 | 제작 세션 계산기 (web) | ✅ 완료 |
+| M6 | DB 마이그레이션 (SQLite → Neon PostgreSQL) | ✅ 완료 |
+| M7 | 공유 UI 패키지 구축 (`packages/ui` + Storybook) | ✅ 완료 |
+| M8 | 멀티유저 전환 (인증 + user_id 격리) | 🔲 예정 |
