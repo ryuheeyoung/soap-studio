@@ -41,8 +41,6 @@ export default async function IngredientsPage() {
                       className={`text-sm font-medium tabular-nums ${
                         ing.stock === 0
                           ? "text-red-500"
-                          : ing.stock <= 50
-                          ? "text-amber-500"
                           : "text-zinc-600 dark:text-zinc-400"
                       }`}
                     >
