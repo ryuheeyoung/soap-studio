@@ -140,13 +140,13 @@ export const Disabled: Story = {
 
 | 컴포넌트 | 구현 | Story | 앱 적용 |
 |----------|------|-------|--------|
-| Button | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
-| Input | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm) |
-| Textarea | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
-| Select | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm) |
-| Card | ✅ | ✅ | ✅ (web: recipes/page) |
-| AlertPanel | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
-| FormLabel | ✅ | ⬜ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel) |
+| Button | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm / web: SessionPanel) |
+| Input | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, RecipeForm) |
+| Textarea | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm) |
+| Select | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, RecipeForm) |
+| Card | ✅ | ✅ | ✅ (admin: RecipeForm / web: recipes/page, SessionPanel, RecipeBreakdownPanel) |
+| AlertPanel | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel / web: ResultPanel) |
+| FormLabel | ✅ | ⬜ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm) |
 | Badge | ✅ | ✅ | ✅ (web: recipes/page) |
 | Table | ✅ | ⬜ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
 | SectionHeader | ⬜ | ⬜ | ⬜ |

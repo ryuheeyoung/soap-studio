@@ -4,6 +4,7 @@ import { useState, useRef, useTransition } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import type { Recipe, Ingredient, ProcessType, Difficulty } from "@soap-studio/types";
 import { PROCESS_TYPE_LABELS, DIFFICULTY_LABELS, INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
+import { Button, Card, Input, Select, Textarea, FormLabel } from "@soap-studio/ui";
 
 interface Props {
   action: (formData: FormData) => Promise<void>;
@@ -183,106 +184,101 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
     return allIngredients.filter((i) => i.name.toLowerCase().includes(lower)).slice(0, 8);
   }
 
-  // ─── 공통 스타일 ──────────────────────────────────────────────────────────
-
-  const inputCls = "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-500";
-  const labelCls = "block text-xs font-medium text-zinc-500 mb-1";
-
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* ── 기본 정보 ── */}
-      <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+      <Card className="flex flex-col gap-4 p-4">
         <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">기본 정보</h2>
 
         <div className="grid grid-cols-2 gap-3">
           {/* 레시피명 */}
           <div className="col-span-2">
-            <label className={labelCls}>레시피명 *</label>
-            <input
+            <FormLabel variant="sm">레시피명 *</FormLabel>
+            <Input
               name="name"
               required
               defaultValue={defaultValues?.name}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 병풀 더블 약산성비누"
             />
           </div>
 
           {/* 캐치프레이즈 */}
           <div className="col-span-2">
-            <label className={labelCls}>캐치프레이즈</label>
-            <input
+            <FormLabel variant="sm">캐치프레이즈</FormLabel>
+            <Input
               name="catchphrase"
               defaultValue={defaultValues?.catchphrase}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 뾰드득 금지, 수분남기는 세안 ~"
             />
           </div>
 
           {/* 제조 방식 */}
           <div>
-            <label className={labelCls}>제조 방식 *</label>
-            <select name="processType" required defaultValue={defaultValues?.processType ?? "mp"} className={inputCls}>
+            <FormLabel variant="sm">제조 방식 *</FormLabel>
+            <Select name="processType" required defaultValue={defaultValues?.processType ?? "mp"} className="w-full">
               {(Object.entries(PROCESS_TYPE_LABELS) as [ProcessType, string][]).map(([val, label]) => (
                 <option key={val} value={val}>{label}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* 제품 유형 */}
           <div>
-            <label className={labelCls}>제품 유형 *</label>
-            <input
+            <FormLabel variant="sm">제품 유형 *</FormLabel>
+            <Input
               name="productType"
               required
               defaultValue={defaultValues?.productType}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 비누, 샴푸바, 물비누"
             />
           </div>
 
           {/* 배치 크기 */}
           <div>
-            <label className={labelCls}>배치 크기 (g) *</label>
-            <input
+            <FormLabel variant="sm">배치 크기 (g) *</FormLabel>
+            <Input
               name="batchSize"
               type="number"
               required
               min={1}
               defaultValue={defaultValues?.batchSize}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 540"
             />
           </div>
 
           {/* 난이도 */}
           <div>
-            <label className={labelCls}>난이도</label>
-            <select name="difficulty" defaultValue={defaultValues?.difficulty ?? ""} className={inputCls}>
+            <FormLabel variant="sm">난이도</FormLabel>
+            <Select name="difficulty" defaultValue={defaultValues?.difficulty ?? ""} className="w-full">
               <option value="">선택 안 함</option>
               {(Object.entries(DIFFICULTY_LABELS) as [Difficulty, string][]).map(([val, label]) => (
                 <option key={val} value={val}>{label}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* 소요 시간 */}
           <div>
-            <label className={labelCls}>소요 시간</label>
-            <input
+            <FormLabel variant="sm">소요 시간</FormLabel>
+            <Input
               name="timeRequired"
               defaultValue={defaultValues?.timeRequired}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 1시간, 30분"
             />
           </div>
 
           {/* 보관 방법 */}
           <div>
-            <label className={labelCls}>보관 방법</label>
-            <input
+            <FormLabel variant="sm">보관 방법</FormLabel>
+            <Input
               name="storageLocation"
               defaultValue={defaultValues?.storageLocation}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 상온, 한 달"
             />
           </div>
@@ -304,42 +300,42 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
 
           {/* 적합 피부 */}
           <div className="col-span-2">
-            <label className={labelCls}>적합 피부 (쉼표 구분)</label>
-            <input
+            <FormLabel variant="sm">적합 피부 (쉼표 구분)</FormLabel>
+            <Input
               name="skinType"
               defaultValue={defaultValues?.skinType?.join(", ")}
-              className={inputCls}
+              className="w-full"
               placeholder="예: 모든 피부, 지성, 트러블"
             />
           </div>
 
           {/* 준비물 */}
           <div className="col-span-2">
-            <label className={labelCls}>준비물 (줄바꿈 구분)</label>
-            <textarea
+            <FormLabel variant="sm">준비물 (줄바꿈 구분)</FormLabel>
+            <Textarea
               name="tools"
               rows={3}
               defaultValue={defaultValues?.tools?.join("\n")}
-              className={`${inputCls} resize-none`}
+              className="resize-none"
               placeholder={"저울\n아로마베이스70\n비누칼"}
             />
           </div>
 
           {/* 메모 */}
           <div className="col-span-2">
-            <label className={labelCls}>메모</label>
-            <textarea
+            <FormLabel variant="sm">메모</FormLabel>
+            <Textarea
               name="memo"
               rows={2}
               defaultValue={defaultValues?.memo}
-              className={`${inputCls} resize-none`}
+              className="resize-none"
             />
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* ── 재료 목록 ── */}
-      <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+      <Card className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
             재료 목록 <span className="ml-1 font-normal text-zinc-400">({ingredientRows.length}개)</span>
@@ -389,10 +385,10 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
             onRemove={() => removeIngredientRow(idx)}
           />
         ))}
-      </section>
+      </Card>
 
       {/* ── 대체재료 ── */}
-      <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+      <Card className="flex flex-col gap-3 p-4">
         <button
           type="button"
           onClick={() => setShowSubstitutes((v) => !v)}
@@ -463,16 +459,12 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
             })}
           </div>
         )}
-      </section>
+      </Card>
 
       {/* ── 제출 버튼 ── */}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
+      <Button type="submit" disabled={isPending} className="mt-1 w-full">
         {isPending ? "저장 중..." : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -497,7 +489,6 @@ interface IngredientRowItemProps {
  */
 function IngredientRowItem({ row, search, suggestions, canAddNew, onSearchChange, onSelectIngredient, onAddNew, onChange, onRemove }: IngredientRowItemProps) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const inputCls = "w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900";
   const isNew = !!row.newIngredientName;
 
   return (
@@ -523,13 +514,13 @@ function IngredientRowItem({ row, search, suggestions, canAddNew, onSearchChange
           ) : (
             // 일반 검색 상태
             <>
-              <input
+              <Input
+                variant="sm"
                 type="text"
                 value={search}
                 onChange={(e) => { onSearchChange(e.target.value); setShowDropdown(true); }}
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-                className={inputCls}
                 placeholder="재료 검색..."
               />
               {showDropdown && (suggestions.length > 0 || canAddNew) && (
@@ -570,25 +561,26 @@ function IngredientRowItem({ row, search, suggestions, canAddNew, onSearchChange
           </span>
         )}
         <div className="flex shrink-0 items-center gap-1">
-          <input
+          <Input
+            variant="sm"
             type="number"
             value={row.amount}
             onChange={(e) => onChange({ amount: e.target.value })}
-            className="w-20 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900"
+            className="w-20"
             placeholder="용량"
             step="0.01"
           />
           {isNew ? (
             // 신규 재료는 단위를 직접 선택
-            <select
+            <Select
+              variant="sm"
               value={row.unit || "g"}
               onChange={(e) => onChange({ unit: e.target.value })}
-              className="rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-xs outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900"
             >
               <option value="g">g</option>
               <option value="ml">ml</option>
               <option value="ea">ea</option>
-            </select>
+            </Select>
           ) : (
             row.unit && <span className="text-xs text-zinc-400">{row.unit}</span>
           )}
@@ -625,7 +617,6 @@ interface SubstituteRowItemProps {
 function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSuggestions, canAddNewSub, onOrigSearchChange, onSubSearchChange, onSelectOrig, onSelectSub, onAddNewSub, onChange, onRemove }: SubstituteRowItemProps) {
   const [showOrig, setShowOrig] = useState(false);
   const [showSub, setShowSub] = useState(false);
-  const inputCls = "w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900";
   const isNewSub = !!row.newSubIngredientName;
 
   const filterOrig = (search: string) => {
@@ -645,13 +636,13 @@ function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSug
       {/* 원본 재료: 현재 레시피 재료 목록에서만 선택 */}
       <div className="relative flex-1">
         <label className="text-[10px] text-zinc-400">원본 재료 (레시피 내)</label>
-        <input
+        <Input
+          variant="sm"
           type="text"
           value={origSearch}
           onChange={(e) => { onOrigSearchChange(e.target.value); setShowOrig(true); }}
           onFocus={() => setShowOrig(true)}
           onBlur={() => setTimeout(() => setShowOrig(false), 150)}
-          className={inputCls}
           placeholder="레시피 재료 검색..."
         />
         {showOrig && filterOrig(origSearch).length > 0 && (
@@ -676,15 +667,16 @@ function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSug
               신규
             </span>
             <span className="flex-1 text-xs text-zinc-800 dark:text-zinc-200">{row.newSubIngredientName}</span>
-            <select
+            <Select
+              variant="sm"
               value={row.newSubIngredientUnit || "g"}
               onChange={(e) => onChange({ newSubIngredientUnit: e.target.value })}
-              className="rounded border border-zinc-200 bg-white px-1 py-0.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+              className="w-auto"
             >
               <option value="g">g</option>
               <option value="ml">ml</option>
               <option value="ea">ea</option>
-            </select>
+            </Select>
             <button
               type="button"
               onMouseDown={() => { onChange({ newSubIngredientName: "", newSubIngredientUnit: "" }); onSubSearchChange(""); }}
@@ -695,13 +687,13 @@ function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSug
           </div>
         ) : (
           <>
-            <input
+            <Input
+              variant="sm"
               type="text"
               value={subSearch}
               onChange={(e) => { onSubSearchChange(e.target.value); setShowSub(true); }}
               onFocus={() => setShowSub(true)}
               onBlur={() => setTimeout(() => setShowSub(false), 150)}
-              className={inputCls}
               placeholder="검색..."
             />
             {showSub && (filterSub(subSearch).length > 0 || canAddNewSub) && (
@@ -728,11 +720,11 @@ function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSug
       {/* 메모 */}
       <div className="flex-1">
         <label className="text-[10px] text-zinc-400">메모</label>
-        <input
+        <Input
+          variant="sm"
           type="text"
           value={row.memo}
           onChange={(e) => onChange({ memo: e.target.value })}
-          className={inputCls}
           placeholder="대체 이유"
         />
       </div>
