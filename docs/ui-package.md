@@ -146,7 +146,7 @@ export const Disabled: Story = {
 | Select | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, RecipeForm) |
 | Card | ✅ | ✅ | ✅ (admin: RecipeForm / web: recipes/page, SessionPanel, RecipeBreakdownPanel) |
 | AlertPanel | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel / web: ResultPanel) |
-| FormLabel | ✅ | ⬜ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm) |
+| FormLabel | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm) |
 | Badge | ✅ | ✅ | ✅ (web: recipes/page) |
-| Table | ✅ | ⬜ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
+| Table | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
 | SectionHeader | ⬜ | ⬜ | ⬜ |
