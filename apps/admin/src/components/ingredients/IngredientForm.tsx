@@ -4,6 +4,7 @@ import { useState, useActionState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { Ingredient } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_OPTIONS, INGREDIENT_UNIT_OPTIONS } from "@soap-studio/types";
+import { Button, Input, Select, Textarea, FormLabel } from "@soap-studio/ui";
 
 // 폼 내 구매옵션 행 타입 (key는 클라이언트 임시 식별자)
 interface OptionRow {
@@ -64,78 +65,69 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
     setOptions((prev) => prev.map((o) => (o.key === key ? { ...o, size: value } : o)));
   }
 
-  const inputClass =
-    "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700";
-
   return (
     <form action={formAction} className="flex flex-col gap-5">
       {/* 재료명 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <FormLabel htmlFor="name">
           재료명 <span className="text-red-500">*</span>
-        </label>
-        <input
+        </FormLabel>
+        <Input
           id="name"
           name="name"
           type="text"
           required
           defaultValue={defaultValues?.name}
           placeholder="예: 판테놀"
-          className={inputClass}
         />
       </div>
 
       {/* 카테고리 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="category" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <FormLabel htmlFor="category">
           카테고리 <span className="text-red-500">*</span>
-        </label>
-        <select
+        </FormLabel>
+        <Select
           id="category"
           name="category"
           required
           defaultValue={defaultValues?.category ?? ""}
-          className={inputClass}
         >
           <option value="" disabled>카테고리 선택</option>
           {INGREDIENT_CATEGORY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* 단위 + 현재 재고 */}
       <div className="flex gap-3">
         <div className="flex flex-1 flex-col gap-1.5">
-          <label htmlFor="unit" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <FormLabel htmlFor="unit">
             단위 <span className="text-red-500">*</span>
-          </label>
-          <select
+          </FormLabel>
+          <Select
             id="unit"
             name="unit"
             required
             defaultValue={defaultValues?.unit ?? "g"}
             onChange={(e) => setUnit(e.target.value)}
-            className={inputClass}
           >
             {INGREDIENT_UNIT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">
-          <label htmlFor="stock" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            현재 재고
-          </label>
-          <input
+          <FormLabel htmlFor="stock">현재 재고</FormLabel>
+          <Input
             id="stock"
             name="stock"
             type="number"
             min="0"
             step="0.1"
             defaultValue={defaultValues?.stock ?? 0}
-            className={inputClass}
           />
         </div>
       </div>
@@ -143,17 +135,11 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
       {/* 구매 옵션 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            구매 옵션
-          </span>
-          <button
-            type="button"
-            onClick={addOption}
-            className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-          >
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">구매 옵션</span>
+          <Button type="button" variant="text" onClick={addOption}>
             <Plus size={13} />
             옵션 추가
-          </button>
+          </Button>
         </div>
 
         {options.length === 0 ? (
@@ -164,14 +150,14 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
           <ul className="flex flex-col gap-2">
             {options.map((opt) => (
               <li key={opt.key} className="flex items-center gap-2">
-                <input
+                <Input
                   type="number"
                   value={opt.size}
                   onChange={(e) => updateSize(opt.key, e.target.value)}
                   placeholder="0"
                   min="0"
                   step="any"
-                  className={`w-32 ${inputClass}`}
+                  className="w-32"
                 />
                 <span className="text-sm text-zinc-500">{unit}</span>
                 <button
@@ -192,26 +178,19 @@ export default function IngredientForm({ action, defaultValues, submitLabel }: P
 
       {/* 메모 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="memo" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          메모
-        </label>
-        <textarea
+        <FormLabel htmlFor="memo">메모</FormLabel>
+        <Textarea
           id="memo"
           name="memo"
           rows={2}
           defaultValue={defaultValues?.memo}
           placeholder="보관 방법, 구매처 등 자유롭게 입력"
-          className={`resize-none ${inputClass}`}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="mt-1 rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
+      <Button type="submit" disabled={isPending} className="mt-1 w-full">
         {isPending ? "저장 중..." : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

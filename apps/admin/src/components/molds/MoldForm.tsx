@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { Mold } from "@soap-studio/types";
+import { Button, Input, Select, Textarea, FormLabel } from "@soap-studio/ui";
 
 // 몰드 형태 선택 옵션
 const SHAPE_OPTIONS: { value: Mold["shape"]; label: string }[] = [
@@ -41,45 +42,43 @@ export default function MoldForm({ action, defaultValues, submitLabel }: Props) 
     <form action={formAction} className="flex flex-col gap-5">
       {/* 몰드명 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <FormLabel htmlFor="name">
           몰드명 <span className="text-red-500">*</span>
-        </label>
-        <input
+        </FormLabel>
+        <Input
           id="name"
           name="name"
           type="text"
           required
           defaultValue={defaultValues?.name}
           placeholder="예: 하트 4구 몰드"
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700"
         />
       </div>
 
       {/* 형태 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="shape" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <FormLabel htmlFor="shape">
           형태 <span className="text-red-500">*</span>
-        </label>
-        <select
+        </FormLabel>
+        <Select
           id="shape"
           name="shape"
           required
           defaultValue={defaultValues?.shape ?? "rectangle"}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700"
         >
           {SHAPE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* 칸당 무게 + 칸 수 */}
       <div className="flex gap-3">
         <div className="flex flex-1 flex-col gap-1.5">
-          <label htmlFor="weightPerCell" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <FormLabel htmlFor="weightPerCell">
             칸당 용량 (g) <span className="text-red-500">*</span>
-          </label>
-          <input
+          </FormLabel>
+          <Input
             id="weightPerCell"
             name="weightPerCell"
             type="number"
@@ -89,15 +88,14 @@ export default function MoldForm({ action, defaultValues, submitLabel }: Props) 
             value={weightPerCell || ""}
             onChange={(e) => setWeightPerCell(parseFloat(e.target.value) || 0)}
             placeholder="예: 90"
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700"
           />
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">
-          <label htmlFor="cellCount" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <FormLabel htmlFor="cellCount">
             칸 수 <span className="text-red-500">*</span>
-          </label>
-          <input
+          </FormLabel>
+          <Input
             id="cellCount"
             name="cellCount"
             type="number"
@@ -107,7 +105,6 @@ export default function MoldForm({ action, defaultValues, submitLabel }: Props) 
             value={cellCount || ""}
             onChange={(e) => setCellCount(parseInt(e.target.value, 10) || 0)}
             placeholder="예: 6"
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700"
           />
         </div>
       </div>
@@ -129,26 +126,19 @@ export default function MoldForm({ action, defaultValues, submitLabel }: Props) 
 
       {/* 메모 */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="memo" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          메모
-        </label>
-        <textarea
+        <FormLabel htmlFor="memo">메모</FormLabel>
+        <Textarea
           id="memo"
           name="memo"
           rows={2}
           defaultValue={defaultValues?.memo}
           placeholder="재질, 구매처 등 자유롭게 입력"
-          className="resize-none rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-700"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="mt-1 rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
+      <Button type="submit" disabled={isPending} className="mt-1 w-full">
         {isPending ? "저장 중..." : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

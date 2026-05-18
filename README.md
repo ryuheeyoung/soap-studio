@@ -46,7 +46,8 @@ soap-studio/
 │   └── web/            # 공개 웹 앱 (Next.js)
 ├── packages/
 │   ├── db/             # Drizzle ORM 스키마 · 쿼리 · 마이그레이션
-│   └── types/          # 공유 TypeScript 타입
+│   ├── types/          # 공유 TypeScript 타입 및 상수
+│   └── ui/             # 공유 UI 컴포넌트 라이브러리 + Storybook
 └── docs/               # 요구사항 및 기획 문서
 ```
 
@@ -113,14 +114,19 @@ npm run dev:admin    # 관리자 앱만
 ## 테스트
 
 ```bash
-npm run test           # 전체 테스트
-npm run test:coverage  # 커버리지 리포트 (각 앱 디렉터리에서 실행)
+# 단위 테스트
+npm run test                          # 전체 실행
+npm run test:coverage                 # 커버리지 리포트 (각 앱 디렉터리에서)
+
+# UI 컴포넌트 시각적 검증
+cd packages/ui && npm run storybook   # 포트 6006
 ```
 
 - `pre-commit` — ESLint + TypeScript 타입 체크 자동 실행
-- `pre-push` — 전체 테스트 자동 실행
+- `pre-push` — 전체 단위 테스트 자동 실행
 
-자세한 테스트 전략 및 작성 규칙 → [`docs/testing.md`](docs/testing.md)
+자세한 테스트 전략 및 작성 규칙 → [`docs/testing.md`](docs/testing.md)  
+UI 패키지 설계 및 컴포넌트 목록 → [`docs/ui-package.md`](docs/ui-package.md)
 
 ---
 

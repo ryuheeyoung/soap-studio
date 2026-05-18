@@ -6,6 +6,7 @@ import { useSessionStore } from "@/stores/session";
 import { calculateRequirements, recommendMolds } from "@/lib/calculate";
 import type { Recipe, Ingredient, Mold, IngredientCategory } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
+import { Button, Card } from "@soap-studio/ui";
 
 interface Props {
   recipes: Recipe[];
@@ -55,20 +56,14 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
           선택된 레시피 {items.length}개
         </h2>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleCopyRequired}
-            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-          >
+          <Button variant="text" onClick={handleCopyRequired}>
             {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
             {copied ? "복사됨!" : "소요량 복사"}
-          </button>
-          <button
-            onClick={clearSession}
-            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-          >
+          </Button>
+          <Button variant="text" onClick={clearSession}>
             <Trash2 size={12} />
             전체 삭제
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -82,14 +77,8 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
           const hasShortage = results.some((r) => !r.isSufficient);
 
           return (
-            <li
-              key={item.recipeId}
-              className={`rounded-xl border bg-white dark:bg-zinc-900 ${
-                hasShortage
-                  ? "border-red-200 dark:border-red-900"
-                  : "border-zinc-200 dark:border-zinc-800"
-              }`}
-            >
+            <li key={item.recipeId}>
+              <Card borderColor={hasShortage ? "border-red-200 dark:border-red-900" : undefined}>
               {/* 상단: 레시피명 + 배율 + 삭제 */}
               <div className="flex items-center gap-3 p-3">
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
@@ -198,6 +187,7 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                   )}
                 </div>
               )}
+            </Card>
             </li>
           );
         })}

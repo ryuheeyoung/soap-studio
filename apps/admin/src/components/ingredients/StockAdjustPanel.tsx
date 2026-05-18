@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ClipboardPaste, Check, AlertCircle } from "lucide-react";
 import { batchAdjustStockAction } from "@/lib/actions/ingredients";
 import type { Ingredient } from "@soap-studio/types";
+import { Button, FormLabel, Textarea, AlertPanel, TableWrapper, Table, Th, Td } from "@soap-studio/ui";
 
 // 구매목록 JSON 항목 타입 (ResultPanel에서 복사한 형식)
 interface PurchaseItem {
@@ -95,41 +96,40 @@ export default function StockAdjustPanel({ ingredients }: Props) {
     <div className="flex flex-col gap-6">
       {/* JSON 입력 영역 */}
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          구매목록 JSON 붙여넣기
-        </label>
-        <textarea
+        <FormLabel>구매목록 JSON 붙여넣기</FormLabel>
+        <Textarea
+          variant="mono"
           value={raw}
           onChange={(e) => { setRaw(e.target.value); setPreview(null); setParseError(null); setDone(false); }}
           rows={6}
           placeholder={'[\n  { "ingredientId": "...", "name": "...", "add": 100, ... }\n]'}
-          className="resize-none rounded-xl border border-zinc-200 bg-white px-4 py-3 font-mono text-xs text-zinc-800 outline-none transition focus:border-zinc-400 focus:ring-2 focus:ring-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:ring-zinc-800"
         />
 
         {parseError && (
-          <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-900 dark:bg-red-950">
+          <AlertPanel variant="error" className="flex items-start gap-2 px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0 text-red-500" />
             <p className="text-xs text-red-600 dark:text-red-400">{parseError}</p>
-          </div>
+          </AlertPanel>
         )}
 
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={handleParse}
           disabled={!raw.trim()}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="w-full"
         >
           <ClipboardPaste size={14} />
           미리보기
-        </button>
+        </Button>
       </div>
 
       {/* 적용 완료 메시지 */}
       {done && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950">
+        <AlertPanel variant="success" className="flex items-center gap-2">
           <Check size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
           <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">재고가 업데이트됐어요!</p>
-        </div>
+        </AlertPanel>
       )}
 
       {/* 미리보기 테이블 */}
@@ -140,14 +140,14 @@ export default function StockAdjustPanel({ ingredients }: Props) {
             <span className="ml-1.5 font-normal text-zinc-400">{preview.length}개 재료</span>
           </h2>
 
-          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-            <table className="w-full text-sm">
+          <TableWrapper>
+            <Table>
               <thead>
                 <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">재료명</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">현재 재고</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">추가량</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-500">적용 후</th>
+                  <Th>재료명</Th>
+                  <Th align="right">현재 재고</Th>
+                  <Th align="right">추가량</Th>
+                  <Th align="right">적용 후</Th>
                 </tr>
               </thead>
               <tbody>
@@ -158,7 +158,7 @@ export default function StockAdjustPanel({ ingredients }: Props) {
                       !row.found ? "opacity-40" : ""
                     }`}
                   >
-                    <td className="px-4 py-3">
+                    <Td>
                       <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.name}</span>
                       {!row.found && (
                         <span className="ml-2 text-xs text-red-400">미등록 재료</span>
@@ -166,30 +166,30 @@ export default function StockAdjustPanel({ ingredients }: Props) {
                       {row.optionLabel && (
                         <span className="ml-2 text-xs text-zinc-400">{row.optionLabel} × {row.qty}</span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
+                    </Td>
+                    <Td align="right" className="text-zinc-500">
                       {row.currentStock.toLocaleString()} {row.unit}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
+                    </Td>
+                    <Td align="right" className="font-medium text-emerald-600 dark:text-emerald-400">
                       +{row.add.toLocaleString()} {row.unit}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-semibold text-zinc-900 dark:text-zinc-50">
+                    </Td>
+                    <Td align="right" className="font-semibold text-zinc-900 dark:text-zinc-50">
                       {row.afterStock.toLocaleString()} {row.unit}
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+            </Table>
+          </TableWrapper>
 
-          <button
+          <Button
             type="button"
             onClick={handleApply}
             disabled={isPending || preview.every((r) => !r.found)}
-            className="rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="w-full"
           >
             {isPending ? "적용 중..." : "재고 일괄 적용"}
-          </button>
+          </Button>
         </div>
       )}
     </div>

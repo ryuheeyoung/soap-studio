@@ -2,12 +2,13 @@ import { getAllRecipes } from "@soap-studio/db/queries/recipes";
 import AddToSessionButton from "@/components/recipes/AddToSessionButton";
 import type { Recipe } from "@soap-studio/types";
 import { DIFFICULTY_LABELS } from "@soap-studio/types";
+import { Badge, Card } from "@soap-studio/ui";
 
-// 제조 방식 뱃지 레이블 및 색상
-const PROCESS_BADGE: Record<Recipe["processType"], { label: string; className: string }> = {
-  mp: { label: "M&P", className: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300" },
-  cp: { label: "CP", className: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" },
-  hp: { label: "HP", className: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300" },
+// 제조 방식 배지 레이블 (Badge 컴포넌트 variant와 대응)
+const PROCESS_LABEL: Record<Recipe["processType"], string> = {
+  mp: "M&P",
+  cp: "CP",
+  hp: "HP",
 };
 
 /**
@@ -25,20 +26,14 @@ export default async function RecipesPage() {
         <p className="text-sm text-zinc-500">등록된 레시피가 없어요.</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {recipes.map((recipe) => {
-            const badge = PROCESS_BADGE[recipe.processType];
-            return (
-              <li
-                key={recipe.id}
-                className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-              >
+          {recipes.map((recipe) => (
+            <li key={recipe.id}>
+              <Card className="p-4">
                 {/* 상단: 뱃지 + 제품 유형 */}
                 <div className="mb-1 flex items-center gap-2">
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-xs font-semibold ${badge.className}`}
-                  >
-                    {badge.label}
-                  </span>
+                  <Badge variant={recipe.processType}>
+                    {PROCESS_LABEL[recipe.processType]}
+                  </Badge>
                   <span className="text-xs text-zinc-500">{recipe.productType}</span>
                 </div>
 
@@ -63,7 +58,7 @@ export default async function RecipesPage() {
                     {recipe.difficulty && (
                       <>
                         <span>·</span>
-                        <span>{recipe.difficulty ? DIFFICULTY_LABELS[recipe.difficulty] : null}</span>
+                        <span>{DIFFICULTY_LABELS[recipe.difficulty]}</span>
                       </>
                     )}
                   </div>
@@ -73,9 +68,9 @@ export default async function RecipesPage() {
                     batchSize={recipe.batchSize}
                   />
                 </div>
-              </li>
-            );
-          })}
+              </Card>
+            </li>
+          ))}
         </ul>
       )}
     </div>

@@ -6,6 +6,7 @@ import { useSessionStore } from "@/stores/session";
 import { calculateRequirements } from "@/lib/calculate";
 import type { Recipe, Ingredient, IngredientCategory, PurchaseOption } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
+import { AlertPanel, Button } from "@soap-studio/ui";
 
 // 부족량을 최소량으로 커버하는 최적 옵션
 function findBestOption(options: PurchaseOption[], shortage: number): PurchaseOption | null {
@@ -48,12 +49,12 @@ export default function ResultPanel({ recipes, ingredients }: Props) {
 
   if (insufficient.length === 0) {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950">
+      <AlertPanel variant="success" className="px-4 py-3">
         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">모든 재료 충분</p>
         <p className="text-xs text-emerald-600 dark:text-emerald-500">
           선택한 레시피를 모두 제작할 수 있어요
         </p>
-      </div>
+      </AlertPanel>
     );
   }
 
@@ -204,14 +205,10 @@ export default function ResultPanel({ recipes, ingredients }: Props) {
         })}
       </ul>
 
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-      >
+      <Button variant="secondary" type="button" onClick={handleCopy} className="w-full py-2.5">
         {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
         {copied ? "복사됐어요!" : "구매목록 복사 (JSON)"}
-      </button>
+      </Button>
     </div>
   );
 }
