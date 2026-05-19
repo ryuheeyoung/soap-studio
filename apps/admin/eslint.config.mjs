@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 커버리지 리포트 생성 파일
+    "coverage/**",
   ]),
   {
     rules: {
