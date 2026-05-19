@@ -124,7 +124,7 @@ export default function RecipesTable({ recipes }: Props) {
                       >
                         수정
                       </Link>
-                      <form action={async () => { "use server"; await deleteRecipeAction(recipe.id); }}>
+                      <form action={deleteRecipeAction.bind(null, recipe.id)}>
                         <button type="submit" className="rounded-md px-2.5 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950">
                           삭제
                         </button>

@@ -117,7 +117,7 @@ export default function IngredientsTable({ ingredients }: Props) {
                       >
                         수정
                       </Link>
-                      <form action={async () => { "use server"; await deleteIngredientAction(ingredient.id); }}>
+                      <form action={deleteIngredientAction.bind(null, ingredient.id)}>
                         <button type="submit" className="rounded-md px-2.5 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950">
                           삭제
                         </button>

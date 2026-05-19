@@ -113,7 +113,7 @@ export default function MoldsTable({ molds }: Props) {
                       >
                         수정
                       </Link>
-                      <form action={async () => { "use server"; await deleteMoldAction(mold.id); }}>
+                      <form action={deleteMoldAction.bind(null, mold.id)}>
                         <button type="submit" className="rounded-md px-2.5 py-1 text-xs font-medium text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950">
                           삭제
                         </button>
