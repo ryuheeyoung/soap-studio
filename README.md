@@ -125,6 +125,7 @@ cd packages/ui && npm run storybook   # 포트 6006
 - `pre-commit` — ESLint + TypeScript 타입 체크 자동 실행
 - `pre-push` — 전체 단위 테스트 자동 실행
 
+커버리지 임계값은 초기 단계 기준으로 낮게 설정되어 있으며, 테스트 추가에 따라 단계적으로 상향 예정.  
 자세한 테스트 전략 및 작성 규칙 → [`docs/testing.md`](docs/testing.md)  
 UI 패키지 설계 및 컴포넌트 목록 → [`docs/ui-package.md`](docs/ui-package.md)
 
