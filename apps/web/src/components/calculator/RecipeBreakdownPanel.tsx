@@ -4,6 +4,7 @@ import { useSessionStore } from "@/stores/session";
 import { calculateRequirements, recommendMolds } from "@/lib/calculate";
 import type { Recipe, Ingredient, Mold, IngredientCategory } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
+import { Card } from "@soap-studio/ui";
 
 interface Props {
   recipes: Recipe[];
@@ -41,13 +42,10 @@ export default function RecipeBreakdownPanel({ recipes, ingredients, molds }: Pr
         const hasShortage = results.some((r) => !r.isSufficient);
 
         return (
-          <div
+          <Card
             key={item.recipeId}
-            className={`rounded-xl border bg-white p-4 dark:bg-zinc-900 ${
-              hasShortage
-                ? "border-red-200 dark:border-red-900"
-                : "border-zinc-200 dark:border-zinc-800"
-            }`}
+            borderColor={hasShortage ? "border-red-200 dark:border-red-900" : undefined}
+            className="p-4"
           >
             {/* 레시피명 + 배치 용량 */}
             <div className="mb-3 flex items-baseline justify-between">
@@ -155,7 +153,7 @@ export default function RecipeBreakdownPanel({ recipes, ingredients, molds }: Pr
                 </ul>
               </div>
             )}
-          </div>
+          </Card>
         );
       })}
     </div>

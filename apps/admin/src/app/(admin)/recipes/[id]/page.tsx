@@ -26,7 +26,7 @@ export default async function EditRecipePage({ params }: Props) {
   const updateAction = updateRecipeAction.bind(null, id);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 md:p-6">
       <Link
         href="/recipes"
         className="flex w-fit items-center gap-1 text-sm text-zinc-500 transition hover:text-zinc-700 dark:hover:text-zinc-300"
