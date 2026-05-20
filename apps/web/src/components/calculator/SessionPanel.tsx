@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Trash2, X, Copy, Check } from "lucide-react";
 import { useSessionStore } from "@/stores/session";
-import { calculateRequirements, recommendMolds } from "@/lib/calculate";
+import { calculateRequirements, filterMoldsForRecipe } from "@/lib/calculate";
 import type { Recipe, Ingredient, Mold, IngredientCategory } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 import { Button, Card } from "@soap-studio/ui";
@@ -25,6 +25,46 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
   const { items, setScale, removeRecipe, clearSession } = useSessionStore();
   // 소요량 복사 완료 상태
   const [copied, setCopied] = useState(false);
+  // 레시피별 선택된 몰드 ID
+  const [moldSelections, setMoldSelections] = useState<Record<string, string | null>>({});
+
+  /**
+   * @function
+   * @description 특정 레시피를 제외한 나머지 선택 기준으로 몰드별 잔여 칸 계산
+   * @param {string} excludeRecipeId - 계산에서 제외할 레시피 ID (현재 레시피 자신)
+   * @returns {Record<string, number>} 몰드 ID별 잔여 칸 수
+   */
+  function getAvailableCells(excludeRecipeId: string): Record<string, number> {
+    const available: Record<string, number> = Object.fromEntries(
+      molds.map((m) => [m.id, m.cellCount])
+    );
+    for (const [recipeId, optionKey] of Object.entries(moldSelections)) {
+      if (recipeId === excludeRecipeId || !optionKey) continue;
+      const item = items.find((i) => i.recipeId === recipeId);
+      if (!item) continue;
+      const batchSize = Math.round(item.batchSize * item.scale);
+      // optionKey는 단일 moldId 또는 "moldId1+moldId2" 형태
+      const moldIds = optionKey.split("+");
+      const selectedMolds = moldIds.map((id) => molds.find((m) => m.id === id)).filter((m): m is Mold => !!m);
+      if (selectedMolds.length === 0) continue;
+
+      if (selectedMolds.length === 1) {
+        const mold = selectedMolds[0];
+        const cellsUsed = Math.ceil(batchSize / mold.weightPerCell);
+        available[mold.id] = Math.max(0, (available[mold.id] ?? mold.cellCount) - cellsUsed);
+      } else {
+        // 조합: 첫 번째 몰드 전체 사용, 나머지를 두 번째로
+        const [first, second] = selectedMolds;
+        available[first.id] = Math.max(0, (available[first.id] ?? first.cellCount) - first.cellCount);
+        const remainder = batchSize - first.cellCount * first.weightPerCell;
+        if (remainder > 0) {
+          const secondCellsUsed = Math.ceil(remainder / second.weightPerCell);
+          available[second.id] = Math.max(0, (available[second.id] ?? second.cellCount) - secondCellsUsed);
+        }
+      }
+    }
+    return available;
+  }
 
   async function handleCopyRequired() {
     const allResults = calculateRequirements(items, recipes, ingredients);
@@ -72,8 +112,13 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
           // 이 레시피 단독 기준 재료 계산
           const results = calculateRequirements([item], recipes, ingredients);
           const effectiveBatchSize = Math.round(item.batchSize * item.scale);
-          // 최적 몰드 1개
-          const topMold = recommendMolds(effectiveBatchSize, molds)[0];
+          // 다른 레시피 선택을 반영한 잔여 칸 기준 몰드 옵션
+          const moldOptions = filterMoldsForRecipe(
+            effectiveBatchSize,
+            molds,
+            getAvailableCells(item.recipeId)
+          );
+          const selectedMoldId = moldSelections[item.recipeId] ?? null;
           const hasShortage = results.some((r) => !r.isSufficient);
 
           return (
@@ -159,29 +204,40 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                     ))}
                   </ul>
 
-                  {/* 추천 몰드 */}
-                  {topMold && (
-                    <div className="mt-2 flex items-center justify-between border-t border-zinc-100 pt-2 dark:border-zinc-800">
-                      <span className="text-xs text-zinc-400">추천 몰드</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                          {topMold.molds.map((m) => m.name).join(" + ")}
-                        </span>
-                        <span
-                          className={`text-xs font-medium ${
-                            Math.abs(topMold.remainder) <= 20
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : topMold.remainder < 0
-                              ? "text-red-500"
-                              : "text-zinc-400"
-                          }`}
-                        >
-                          {Math.abs(topMold.remainder) <= 20
-                            ? "딱 맞음"
-                            : topMold.remainder < 0
-                            ? `${Math.abs(topMold.remainder).toFixed(0)}g 초과`
-                            : `${topMold.remainder.toFixed(0)}g 남음`}
-                        </span>
+                  {/* 몰드 선택 */}
+                  {moldOptions.length > 0 && (
+                    <div className="mt-2 flex items-start gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                      <span className="shrink-0 text-xs text-zinc-400">몰드</span>
+                      <div className="flex flex-wrap gap-1">
+                        {moldOptions.map(({ molds: optionMolds, cellsMap, isAvailable }) => {
+                          const optionKey = optionMolds.map((m) => m.id).join("+");
+                          const isSelected = selectedMoldId === optionKey;
+                          return (
+                            <button
+                              key={optionKey}
+                              type="button"
+                              disabled={!isAvailable && !isSelected}
+                              onClick={() =>
+                                setMoldSelections((prev) => ({
+                                  ...prev,
+                                  [item.recipeId]: isSelected ? null : optionKey,
+                                }))
+                              }
+                              className={`rounded-full border px-2.5 py-0.5 text-xs transition ${
+                                isSelected
+                                  ? "border-zinc-700 bg-zinc-800 text-white dark:border-zinc-300 dark:bg-zinc-100 dark:text-zinc-900"
+                                  : isAvailable
+                                  ? "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400"
+                                  : "cursor-not-allowed border-zinc-100 text-zinc-300 dark:border-zinc-800 dark:text-zinc-600"
+                              }`}
+                            >
+                              {optionMolds.map((m) => m.name).join("+")}
+                              <span className="ml-1 opacity-60">
+                                ({optionMolds.map((m) => `${cellsMap[m.id]}칸`).join("+")})
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

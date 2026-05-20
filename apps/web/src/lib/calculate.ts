@@ -20,6 +20,16 @@ export interface MoldRecommendation {
   remainder: number;
 }
 
+// 레시피별 몰드 선택 옵션 (단일 또는 2개 조합)
+export interface MoldOption {
+  // 단일이면 1개, 조합이면 2개
+  molds: Mold[];
+  // 몰드 ID별 필요 칸 수
+  cellsMap: Record<string, number>;
+  // 다른 레시피 선택 반영 후 사용 가능 여부
+  isAvailable: boolean;
+}
+
 /**
  * @function
  * @description 레시피 재료 항목의 유효 사용량 계산. 범위는 최솟값 기준
@@ -157,4 +167,74 @@ export function recommendMolds(totalBatchSize: number, molds: Mold[]): MoldRecom
  */
 export function calcTotalBatchSize(items: SessionItem[]): number {
   return items.reduce((sum, item) => sum + item.batchSize * item.scale, 0);
+}
+
+/**
+ * @function
+ * @description 레시피 배치 용량 기준으로 사용 가능한 몰드 목록 반환. 단위중량 큰 순 정렬, 잔여 칸 부족 시 비활성 표시
+ * @param {number} batchSize - 이 레시피의 배치 용량 (g)
+ * @param {Mold[]} molds - 전체 몰드 목록
+ * @param {Record<string, number>} availableCells - 몰드 ID별 현재 잔여 칸 수 (다른 레시피 선택 반영)
+ * @returns {MoldOption[]} 단위중량 큰 순으로 정렬된 몰드 옵션 목록
+ */
+export function filterMoldsForRecipe(
+  batchSize: number,
+  molds: Mold[],
+  availableCells: Record<string, number>
+): MoldOption[] {
+  const results: MoldOption[] = [];
+
+  // 단일 몰드: 칸 수가 충분한 것만
+  for (const mold of molds) {
+    const cellsNeeded = Math.ceil(batchSize / mold.weightPerCell);
+    if (cellsNeeded > mold.cellCount) continue;
+    const remaining = availableCells[mold.id] ?? mold.cellCount;
+    results.push({
+      molds: [mold],
+      cellsMap: { [mold.id]: cellsNeeded },
+      isAvailable: cellsNeeded <= remaining,
+    });
+  }
+
+  // 단일 몰드가 하나라도 있으면 조합 불필요
+  if (results.length > 0) return results;
+
+  // 2개 조합: 첫 번째 몰드(큰 칸) 전체 사용 후 나머지를 두 번째 몰드로 처리
+  for (let i = 0; i < molds.length; i++) {
+    for (let j = i + 1; j < molds.length; j++) {
+      // 단위중량 큰 쪽을 first로 정렬
+      const [first, second] =
+        molds[i].weightPerCell >= molds[j].weightPerCell
+          ? [molds[i], molds[j]]
+          : [molds[j], molds[i]];
+
+      // first 몰드 전체 사용
+      const firstCapacity = first.cellCount * first.weightPerCell;
+      const remainder = batchSize - firstCapacity;
+
+      // first만으로 충분하면 단일 케이스와 중복 — 조합 불필요
+      if (remainder <= 0) continue;
+
+      const secondCellsNeeded = Math.ceil(remainder / second.weightPerCell);
+      if (secondCellsNeeded > second.cellCount) continue;
+
+      const firstRemaining = availableCells[first.id] ?? first.cellCount;
+      const secondRemaining = availableCells[second.id] ?? second.cellCount;
+
+      results.push({
+        molds: [first, second],
+        cellsMap: { [first.id]: first.cellCount, [second.id]: secondCellsNeeded },
+        isAvailable:
+          first.cellCount <= firstRemaining && secondCellsNeeded <= secondRemaining,
+      });
+    }
+  }
+
+  // 단위중량 큰 순 정렬 (조합은 가장 큰 몰드 기준), 조합은 상위 3개만
+  const sorted = results.sort(
+    (a, b) => b.molds[0].weightPerCell - a.molds[0].weightPerCell
+  );
+
+  const hasCombination = sorted.some((r) => r.molds.length > 1);
+  return hasCombination ? sorted.slice(0, 3) : sorted;
 }
