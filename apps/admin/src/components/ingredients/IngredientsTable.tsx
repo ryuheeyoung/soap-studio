@@ -83,14 +83,14 @@ export default function IngredientsTable({ ingredients }: Props) {
       {filtered.length === 0 ? (
         <p className="py-4 text-center text-sm text-zinc-400">검색 결과가 없어요.</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-100 dark:border-zinc-800">
                 <th className="px-4 py-3 text-left font-medium text-zinc-500">재료명</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">카테고리</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-zinc-500 md:table-cell">카테고리</th>
                 <th className="px-4 py-3 text-right font-medium text-zinc-500">재고</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">메모</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-zinc-500 md:table-cell">메모</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -100,13 +100,13 @@ export default function IngredientsTable({ ingredients }: Props) {
                   <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
                     {ingredient.name}
                   </td>
-                  <td className="px-4 py-3 text-zinc-500">
+                  <td className="hidden px-4 py-3 text-zinc-500 md:table-cell">
                     {INGREDIENT_CATEGORY_LABELS[ingredient.category]}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
                     {ingredient.stock.toLocaleString()} {ingredient.unit}
                   </td>
-                  <td className="max-w-xs truncate px-4 py-3 text-zinc-400">
+                  <td className="hidden max-w-xs truncate px-4 py-3 text-zinc-400 md:table-cell">
                     {ingredient.memo ?? "-"}
                   </td>
                   <td className="px-4 py-3">

@@ -83,15 +83,15 @@ export default function RecipesTable({ recipes }: Props) {
       {filtered.length === 0 ? (
         <p className="py-4 text-center text-sm text-zinc-400">검색 결과가 없어요.</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-100 dark:border-zinc-800">
                 <th className="px-4 py-3 text-left font-medium text-zinc-500">레시피명</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-500">제조 방식</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">제품 유형</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">배치 크기</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">재료 수</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-zinc-500 md:table-cell">제품 유형</th>
+                <th className="hidden px-4 py-3 text-right font-medium text-zinc-500 md:table-cell">배치 크기</th>
+                <th className="hidden px-4 py-3 text-right font-medium text-zinc-500 md:table-cell">재료 수</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -109,11 +109,11 @@ export default function RecipesTable({ recipes }: Props) {
                       {recipe.processType.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{recipe.productType}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
+                  <td className="hidden px-4 py-3 text-zinc-600 md:table-cell dark:text-zinc-400">{recipe.productType}</td>
+                  <td className="hidden px-4 py-3 text-right tabular-nums text-zinc-700 md:table-cell dark:text-zinc-300">
                     {recipe.batchSize.toLocaleString()}g
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">
+                  <td className="hidden px-4 py-3 text-right tabular-nums text-zinc-700 md:table-cell dark:text-zinc-300">
                     {recipe.ingredients.length}개
                   </td>
                   <td className="px-4 py-3">

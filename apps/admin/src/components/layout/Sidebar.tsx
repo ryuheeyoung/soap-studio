@@ -20,7 +20,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-zinc-200 bg-white md:flex dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex h-14 items-center border-b border-zinc-200 px-5 dark:border-zinc-800">
         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
           Soap Studio

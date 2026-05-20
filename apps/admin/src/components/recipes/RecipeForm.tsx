@@ -632,106 +632,110 @@ function SubstituteRowItem({ row, origSearch, subSearch, origSuggestions, subSug
   };
 
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
-      {/* 원본 재료: 현재 레시피 재료 목록에서만 선택 */}
-      <div className="relative flex-1">
-        <label className="text-[10px] text-zinc-400">원본 재료 (레시피 내)</label>
-        <Input
-          variant="sm"
-          type="text"
-          value={origSearch}
-          onChange={(e) => { onOrigSearchChange(e.target.value); setShowOrig(true); }}
-          onFocus={() => setShowOrig(true)}
-          onBlur={() => setTimeout(() => setShowOrig(false), 150)}
-          placeholder="레시피 재료 검색..."
-        />
-        {showOrig && filterOrig(origSearch).length > 0 && (
-          <ul className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
-            {filterOrig(origSearch).map((ing) => (
-              <li key={ing.id} onMouseDown={() => onSelectOrig(ing)} className="cursor-pointer px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                {ing.name}
-              </li>
-            ))}
-          </ul>
-        )}
+    <div className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+      {/* 원본 재료 + 대체 재료: 모바일 세로 / md 이상 가로 */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-start">
+        {/* 원본 재료: 현재 레시피 재료 목록에서만 선택 */}
+        <div className="relative flex-1">
+          <label className="text-[10px] text-zinc-400">원본 재료 (레시피 내)</label>
+          <Input
+            variant="sm"
+            type="text"
+            value={origSearch}
+            onChange={(e) => { onOrigSearchChange(e.target.value); setShowOrig(true); }}
+            onFocus={() => setShowOrig(true)}
+            onBlur={() => setTimeout(() => setShowOrig(false), 150)}
+            placeholder="레시피 재료 검색..."
+          />
+          {showOrig && filterOrig(origSearch).length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
+              {filterOrig(origSearch).map((ing) => (
+                <li key={ing.id} onMouseDown={() => onSelectOrig(ing)} className="cursor-pointer px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                  {ing.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <span className="hidden shrink-0 text-zinc-400 md:block md:mt-5">→</span>
+
+        {/* 대체 재료: 전체 재료 + 신규 추가 가능 */}
+        <div className="relative flex-1">
+          <label className="text-[10px] text-zinc-400">→ 대체 재료</label>
+          {isNewSub ? (
+            <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 dark:border-amber-700 dark:bg-amber-950/30">
+              <span className="shrink-0 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-amber-600">
+                신규
+              </span>
+              <span className="flex-1 text-xs text-zinc-800 dark:text-zinc-200">{row.newSubIngredientName}</span>
+              <Select
+                variant="sm"
+                value={row.newSubIngredientUnit || "g"}
+                onChange={(e) => onChange({ newSubIngredientUnit: e.target.value })}
+                className="w-auto"
+              >
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="ea">ea</option>
+              </Select>
+              <button
+                type="button"
+                onMouseDown={() => { onChange({ newSubIngredientName: "", newSubIngredientUnit: "" }); onSubSearchChange(""); }}
+                className="shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <>
+              <Input
+                variant="sm"
+                type="text"
+                value={subSearch}
+                onChange={(e) => { onSubSearchChange(e.target.value); setShowSub(true); }}
+                onFocus={() => setShowSub(true)}
+                onBlur={() => setTimeout(() => setShowSub(false), 150)}
+                placeholder="검색..."
+              />
+              {showSub && (filterSub(subSearch).length > 0 || canAddNewSub) && (
+                <ul className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
+                  {filterSub(subSearch).map((ing) => (
+                    <li key={ing.id} onMouseDown={() => onSelectSub(ing)} className="cursor-pointer px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                      {ing.name}
+                    </li>
+                  ))}
+                  {canAddNewSub && (
+                    <li
+                      onMouseDown={() => onAddNewSub(subSearch.trim())}
+                      className="cursor-pointer border-t border-zinc-100 px-3 py-2 text-xs text-amber-600 hover:bg-amber-50 dark:border-zinc-700 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                    >
+                      + 새로 추가: <span className="font-medium">{subSearch.trim()}</span>
+                    </li>
+                  )}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      <span className="mt-5 shrink-0 text-zinc-400">→</span>
-
-      {/* 대체 재료: 전체 재료 + 신규 추가 가능 */}
-      <div className="relative flex-1">
-        <label className="text-[10px] text-zinc-400">대체 재료</label>
-        {isNewSub ? (
-          <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 dark:border-amber-700 dark:bg-amber-950/30">
-            <span className="shrink-0 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-amber-600">
-              신규
-            </span>
-            <span className="flex-1 text-xs text-zinc-800 dark:text-zinc-200">{row.newSubIngredientName}</span>
-            <Select
-              variant="sm"
-              value={row.newSubIngredientUnit || "g"}
-              onChange={(e) => onChange({ newSubIngredientUnit: e.target.value })}
-              className="w-auto"
-            >
-              <option value="g">g</option>
-              <option value="ml">ml</option>
-              <option value="ea">ea</option>
-            </Select>
-            <button
-              type="button"
-              onMouseDown={() => { onChange({ newSubIngredientName: "", newSubIngredientUnit: "" }); onSubSearchChange(""); }}
-              className="shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            >
-              ×
-            </button>
-          </div>
-        ) : (
-          <>
-            <Input
-              variant="sm"
-              type="text"
-              value={subSearch}
-              onChange={(e) => { onSubSearchChange(e.target.value); setShowSub(true); }}
-              onFocus={() => setShowSub(true)}
-              onBlur={() => setTimeout(() => setShowSub(false), 150)}
-              placeholder="검색..."
-            />
-            {showSub && (filterSub(subSearch).length > 0 || canAddNewSub) && (
-              <ul className="absolute z-10 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
-                {filterSub(subSearch).map((ing) => (
-                  <li key={ing.id} onMouseDown={() => onSelectSub(ing)} className="cursor-pointer px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                    {ing.name}
-                  </li>
-                ))}
-                {canAddNewSub && (
-                  <li
-                    onMouseDown={() => onAddNewSub(subSearch.trim())}
-                    className="cursor-pointer border-t border-zinc-100 px-3 py-2 text-xs text-amber-600 hover:bg-amber-50 dark:border-zinc-700 dark:text-amber-400 dark:hover:bg-amber-950/30"
-                  >
-                    + 새로 추가: <span className="font-medium">{subSearch.trim()}</span>
-                  </li>
-                )}
-              </ul>
-            )}
-          </>
-        )}
+      {/* 메모 + 삭제 버튼 */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <label className="text-[10px] text-zinc-400">메모</label>
+          <Input
+            variant="sm"
+            type="text"
+            value={row.memo}
+            onChange={(e) => onChange({ memo: e.target.value })}
+            placeholder="대체 이유"
+          />
+        </div>
+        <button type="button" onClick={onRemove} className="shrink-0 pb-1 text-zinc-400 hover:text-red-500">
+          <Trash2 size={14} />
+        </button>
       </div>
-
-      {/* 메모 */}
-      <div className="flex-1">
-        <label className="text-[10px] text-zinc-400">메모</label>
-        <Input
-          variant="sm"
-          type="text"
-          value={row.memo}
-          onChange={(e) => onChange({ memo: e.target.value })}
-          placeholder="대체 이유"
-        />
-      </div>
-
-      <button type="button" onClick={onRemove} className="mt-5 shrink-0 text-zinc-400 hover:text-red-500">
-        <Trash2 size={14} />
-      </button>
     </div>
   );
 }

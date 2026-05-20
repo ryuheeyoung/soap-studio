@@ -85,14 +85,14 @@ export default function MoldsTable({ molds }: Props) {
       {filtered.length === 0 ? (
         <p className="py-4 text-center text-sm text-zinc-400">검색 결과가 없어요.</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-100 dark:border-zinc-800">
                 <th className="px-4 py-3 text-left font-medium text-zinc-500">몰드명</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500">형태</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">칸당 용량</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500">칸 수</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-zinc-500 md:table-cell">형태</th>
+                <th className="hidden px-4 py-3 text-right font-medium text-zinc-500 md:table-cell">칸당 용량</th>
+                <th className="hidden px-4 py-3 text-right font-medium text-zinc-500 md:table-cell">칸 수</th>
                 <th className="px-4 py-3 text-right font-medium text-zinc-500">총 용량</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -101,9 +101,9 @@ export default function MoldsTable({ molds }: Props) {
               {filtered.map((mold) => (
                 <tr key={mold.id} className="border-b border-zinc-50 last:border-0 dark:border-zinc-800">
                   <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">{mold.name}</td>
-                  <td className="px-4 py-3 text-zinc-500">{SHAPE_LABELS[mold.shape]}</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">{mold.weightPerCell}g</td>
-                  <td className="px-4 py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">{mold.cellCount}칸</td>
+                  <td className="hidden px-4 py-3 text-zinc-500 md:table-cell">{SHAPE_LABELS[mold.shape]}</td>
+                  <td className="hidden px-4 py-3 text-right tabular-nums text-zinc-700 md:table-cell dark:text-zinc-300">{mold.weightPerCell}g</td>
+                  <td className="hidden px-4 py-3 text-right tabular-nums text-zinc-700 md:table-cell dark:text-zinc-300">{mold.cellCount}칸</td>
                   <td className="px-4 py-3 text-right tabular-nums font-medium text-zinc-900 dark:text-zinc-50">{mold.totalCapacity.toLocaleString()}g</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">

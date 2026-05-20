@@ -11,7 +11,7 @@ export default async function RecipesPage() {
   const recipes = await getAllRecipes();
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">레시피 관리</h1>
         <Link
