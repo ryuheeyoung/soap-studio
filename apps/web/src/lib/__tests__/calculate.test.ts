@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { calculateRequirements, recommendMolds, calcTotalBatchSize } from "../calculate";
+import { calculateRequirements, recommendMolds, calcTotalBatchSize, filterMoldsForRecipe } from "../calculate";
 import type { Recipe, Ingredient, Mold } from "@soap-studio/types";
 import type { SessionItem } from "@/stores/session";
 
@@ -326,5 +326,238 @@ describe("recommendMolds", () => {
       const totalCapacity = rec.molds.reduce((sum, m) => sum + m.totalCapacity, 0);
       expect(rec.fillRatio).toBeCloseTo(totalCapacity / batchSize, 5);
     }
+  });
+});
+
+// ─── filterMoldsForRecipe ─────────────────────────────────────────────────────
+
+describe("filterMoldsForRecipe", () => {
+  // 픽스처: molds는 beforeEach에서 세팅된 전역 변수 재사용
+  // mold-large: weightPerCell=90, cellCount=6 → 최대 540g
+  // mold-medium: weightPerCell=80, cellCount=4 → 최대 320g
+  // mold-small:  weightPerCell=60, cellCount=2 → 최대 120g
+
+  it("should return empty array when mold list is empty", () => {
+    // Act & Assert
+    expect(filterMoldsForRecipe(500, [], {})).toHaveLength(0);
+  });
+
+  it("should include mold when ceil(batchSize/weightPerCell) <= cellCount", () => {
+    // Arrange — 500g / 90g = ceil(5.56) = 6칸, mold-large cellCount=6 → 딱 맞음
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(500, molds, availableCells);
+
+    // Assert — mold-large 포함
+    const ids = result.flatMap((r) => r.molds.map((m) => m.id));
+    expect(ids).toContain("mold-large");
+  });
+
+  it("should exclude mold when ceil(batchSize/weightPerCell) > cellCount", () => {
+    // Arrange — 550g / 80g = ceil(6.875) = 7칸, mold-medium cellCount=4 → 부족
+    // 550g / 90g = ceil(6.11) = 7칸, mold-large cellCount=6 → 부족
+    // 550g / 60g = ceil(9.17) = 10칸, mold-small cellCount=2 → 부족
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(550, molds, availableCells);
+    const singleMoldResults = result.filter((r) => r.molds.length === 1);
+
+    // Assert — 단일 몰드 중 맞는 것 없음
+    expect(singleMoldResults).toHaveLength(0);
+  });
+
+  it("should sort single molds by weightPerCell descending", () => {
+    // Arrange — 150g: mold-large(ceil=2), mold-medium(ceil=2) 모두 맞음
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(150, molds, availableCells);
+    const singleMolds = result.filter((r) => r.molds.length === 1);
+
+    // Assert — weightPerCell 내림차순
+    for (let i = 1; i < singleMolds.length; i++) {
+      expect(singleMolds[i - 1].molds[0].weightPerCell).toBeGreaterThanOrEqual(
+        singleMolds[i].molds[0].weightPerCell
+      );
+    }
+  });
+
+  it("should calculate cellsNeeded correctly in cellsMap", () => {
+    // Arrange — 450g / 90g = ceil(5) = 5칸
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(450, molds, availableCells);
+    const largeMoldOption = result.find(
+      (r) => r.molds.length === 1 && r.molds[0].id === "mold-large"
+    );
+
+    // Assert
+    expect(largeMoldOption).toBeDefined();
+    expect(largeMoldOption!.cellsMap["mold-large"]).toBe(5);
+  });
+
+  it("should mark mold as available when cellsNeeded <= availableCells", () => {
+    // Arrange — mold-large에 칸 6개 남아있고 5칸 필요
+    const availableCells = { "mold-large": 6 };
+
+    // Act
+    const result = filterMoldsForRecipe(450, molds, availableCells);
+    const largeMoldOption = result.find(
+      (r) => r.molds.length === 1 && r.molds[0].id === "mold-large"
+    );
+
+    // Assert
+    expect(largeMoldOption!.isAvailable).toBe(true);
+  });
+
+  it("should mark mold as unavailable when availableCells is insufficient", () => {
+    // Arrange — mold-large에 칸 3개만 남고 5칸 필요
+    const availableCells = { "mold-large": 3 };
+
+    // Act
+    const result = filterMoldsForRecipe(450, molds, availableCells);
+    const largeMoldOption = result.find(
+      (r) => r.molds.length === 1 && r.molds[0].id === "mold-large"
+    );
+
+    // Assert
+    expect(largeMoldOption!.isAvailable).toBe(false);
+  });
+
+  it("should use mold.cellCount as default when availableCells entry is missing", () => {
+    // Arrange — availableCells에 mold-large 항목 없음 → cellCount(6) 기본값 사용
+    // 450g / 90g = 5칸 필요, 기본값 6칸 → available
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(450, molds, availableCells);
+    const largeMoldOption = result.find(
+      (r) => r.molds.length === 1 && r.molds[0].id === "mold-large"
+    );
+
+    // Assert
+    expect(largeMoldOption!.isAvailable).toBe(true);
+  });
+
+  it("should return combinations only when no single mold fits", () => {
+    // Arrange — 단일 몰드로 담기 불가능한 용량 (550g)
+    // mold-large: ceil(550/90)=7 > 6, mold-medium: ceil(550/80)=7 > 4, mold-small: ceil(550/60)=10 > 2
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(550, molds, availableCells);
+
+    // Assert — 결과가 있다면 모두 조합
+    if (result.length > 0) {
+      expect(result.every((r) => r.molds.length > 1)).toBe(true);
+    }
+  });
+
+  it("should not return combinations when a single mold fits", () => {
+    // Arrange — 150g는 여러 단일 몰드가 담을 수 있음
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(150, molds, availableCells);
+
+    // Assert — 조합 없음
+    expect(result.every((r) => r.molds.length === 1)).toBe(true);
+  });
+
+  it("should build 2-mold combination: first fills completely, second handles remainder", () => {
+    // Arrange — 단일 몰드로 불가능한 경우 세팅
+    // mold-large(90g×6=540g 최대), mold-medium(80g×4=320g 최대)으로 550g 처리
+    // → 단일 불가. 조합: large 전체(540g) + medium으로 나머지(10g → ceil(10/80)=1칸)
+    const twoMolds: Mold[] = [
+      {
+        id: "mold-a",
+        name: "A몰드",
+        shape: "rectangle",
+        weightPerCell: 90,
+        cellCount: 5,
+        totalCapacity: 450,
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+      {
+        id: "mold-b",
+        name: "B몰드",
+        shape: "rectangle",
+        weightPerCell: 60,
+        cellCount: 4,
+        totalCapacity: 240,
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+    ];
+    // batchSize=500: A단일=ceil(500/90)=6>5 불가, B단일=ceil(500/60)=9>4 불가
+    // 조합: A전체(5칸×90=450g) + 나머지50g → B ceil(50/60)=1칸
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(500, twoMolds, availableCells);
+    const combo = result.find((r) => r.molds.length === 2);
+
+    // Assert
+    expect(combo).toBeDefined();
+    expect(combo!.cellsMap["mold-a"]).toBe(5); // first 전체
+    expect(combo!.cellsMap["mold-b"]).toBe(1); // ceil(50/60)=1
+  });
+
+  it("should cap combinations at 3 results", () => {
+    // Arrange — 조합만 나오는 케이스: 단일로 불가능한 큰 배치
+    // 여러 조합이 생길 수 있는 몰드 세트
+    const manyMolds: Mold[] = [
+      { id: "m1", name: "M1", shape: "rectangle", weightPerCell: 90, cellCount: 3, totalCapacity: 270, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+      { id: "m2", name: "M2", shape: "rectangle", weightPerCell: 85, cellCount: 3, totalCapacity: 255, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+      { id: "m3", name: "M3", shape: "rectangle", weightPerCell: 80, cellCount: 3, totalCapacity: 240, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+      { id: "m4", name: "M4", shape: "rectangle", weightPerCell: 70, cellCount: 3, totalCapacity: 210, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+    ];
+    // batchSize=400: 단일 max=270 < 400 → 모두 조합만 가능
+    const availableCells = {};
+
+    // Act
+    const result = filterMoldsForRecipe(400, manyMolds, availableCells);
+
+    // Assert
+    expect(result.length).toBeLessThanOrEqual(3);
+  });
+
+  it("should mark combo as unavailable when one mold has insufficient cells", () => {
+    // Arrange — 조합만 나오는 케이스에서 first 몰드 잔여 칸 부족
+    const twoMolds: Mold[] = [
+      {
+        id: "mold-a",
+        name: "A몰드",
+        shape: "rectangle",
+        weightPerCell: 90,
+        cellCount: 5,
+        totalCapacity: 450,
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+      {
+        id: "mold-b",
+        name: "B몰드",
+        shape: "rectangle",
+        weightPerCell: 60,
+        cellCount: 4,
+        totalCapacity: 240,
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+    ];
+    // mold-a 잔여 2칸만 있고 조합은 5칸 전체 필요 → 불가
+    const availableCells = { "mold-a": 2 };
+
+    // Act
+    const result = filterMoldsForRecipe(500, twoMolds, availableCells);
+    const combo = result.find((r) => r.molds.length === 2);
+
+    // Assert
+    expect(combo?.isAvailable).toBe(false);
   });
 });

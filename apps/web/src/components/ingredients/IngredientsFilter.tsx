@@ -7,6 +7,8 @@ import { INGREDIENT_CATEGORY_LABELS, INGREDIENT_CATEGORY_ORDER } from "@soap-stu
 
 interface Props {
   ingredients: Ingredient[];
+  // 재료 ID별 최소 필요량 (레시피 기반)
+  minRequiredMap: Record<string, number>;
 }
 
 /**
@@ -14,7 +16,21 @@ interface Props {
  * @description 재료 목록 클라이언트 필터. 이름 검색 → 카테고리 그룹 또는 플랫 목록으로 표시
  * @param {Ingredient[]} props.ingredients - 전체 재료 목록
  */
-export default function IngredientsFilter({ ingredients }: Props) {
+/**
+ * @function
+ * @description 재고 수치 색상 결정. 소진 시 red, 최소 필요량 미달 시 orange, 정상 시 기본색
+ * @param {Ingredient} ing - 재료
+ * @param {Record<string, number>} minRequiredMap - 재료별 최소 필요량
+ * @returns {string} Tailwind 텍스트 색상 클래스
+ */
+function stockColorClass(ing: Ingredient, minRequiredMap: Record<string, number>): string {
+  if (ing.stock === 0) return "text-red-500";
+  const minRequired = minRequiredMap[ing.id];
+  if (minRequired != null && ing.stock < minRequired) return "text-orange-400";
+  return "text-zinc-600 dark:text-zinc-400";
+}
+
+export default function IngredientsFilter({ ingredients, minRequiredMap }: Props) {
   // 이름 검색어
   const [query, setQuery] = useState("");
 
@@ -60,7 +76,7 @@ export default function IngredientsFilter({ ingredients }: Props) {
                   {INGREDIENT_CATEGORY_LABELS[ing.category]}
                 </span>
               </div>
-              <span className={`text-sm font-medium tabular-nums ${ing.stock === 0 ? "text-red-500" : "text-zinc-600 dark:text-zinc-400"}`}>
+              <span className={`text-sm font-medium tabular-nums ${stockColorClass(ing, minRequiredMap)}`}>
                 {ing.stock}
                 <span className="ml-0.5 text-xs font-normal text-zinc-400">{ing.unit}</span>
               </span>
@@ -88,7 +104,7 @@ export default function IngredientsFilter({ ingredients }: Props) {
                       className="flex items-center justify-between rounded-lg px-3 py-2.5 odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-900 dark:even:bg-zinc-950"
                     >
                       <span className="text-sm text-zinc-800 dark:text-zinc-200">{ing.name}</span>
-                      <span className={`text-sm font-medium tabular-nums ${ing.stock === 0 ? "text-red-500" : "text-zinc-600 dark:text-zinc-400"}`}>
+                      <span className={`text-sm font-medium tabular-nums ${stockColorClass(ing, minRequiredMap)}`}>
                         {ing.stock}
                         <span className="ml-0.5 text-xs font-normal text-zinc-400">{ing.unit}</span>
                       </span>
