@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { Plus, Layers } from "lucide-react";
 import { getAllMolds } from "@soap-studio/db/queries/molds";
@@ -8,6 +9,7 @@ import MoldsTable from "@/components/molds/MoldsTable";
  * @description 몰드 목록 페이지. 이름 검색 및 형태 필터, 추가/수정/삭제 제공
  */
 export default async function MoldsPage() {
+  noStore();
   const molds = await getAllMolds();
 
   return (

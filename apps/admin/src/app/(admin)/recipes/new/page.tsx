@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
@@ -9,6 +10,7 @@ import { createRecipeAction } from "@/lib/actions/recipes";
  * @description 레시피 추가 페이지
  */
 export default async function NewRecipePage() {
+  noStore();
   const allIngredients = await getAllIngredients();
 
   return (

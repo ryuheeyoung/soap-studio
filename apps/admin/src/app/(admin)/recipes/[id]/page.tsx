@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -16,6 +17,7 @@ interface Props {
  * @param {string} props.params.id - 수정할 레시피 ID
  */
 export default async function EditRecipePage({ params }: Props) {
+  noStore();
   const { id } = await params;
   const [recipe, allIngredients] = await Promise.all([
     getRecipeById(id),

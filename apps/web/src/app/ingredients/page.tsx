@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
 import { getAllRecipes } from "@soap-studio/db/queries/recipes";
 import IngredientsFilter from "@/components/ingredients/IngredientsFilter";
@@ -7,6 +8,7 @@ import IngredientsFilter from "@/components/ingredients/IngredientsFilter";
  * @description 재료 재고 현황 페이지. 카테고리별 그룹으로 재고량 표시, 이름 검색 지원
  */
 export default async function IngredientsPage() {
+  noStore();
   const [ingredients, recipes] = await Promise.all([
     getAllIngredients(),
     getAllRecipes(),

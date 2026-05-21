@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
 import { getAllRecipes } from "@soap-studio/db/queries/recipes";
@@ -8,6 +9,7 @@ import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
  * @description 홈 대시보드. 재고 소진 재료 요약 + 최근 등록 레시피를 한 화면에 표시
  */
 export default async function HomePage() {
+  noStore();
   const [ingredients, recipes] = await Promise.all([
     getAllIngredients(),
     getAllRecipes(),
