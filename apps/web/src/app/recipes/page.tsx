@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { getAllRecipes } from "@soap-studio/db/queries/recipes";
 import RecipesFilter from "@/components/recipes/RecipesFilter";
 
@@ -6,6 +7,7 @@ import RecipesFilter from "@/components/recipes/RecipesFilter";
  * @description 레시피 목록 페이지. 카드 형태로 표시하고 계산기 세션 추가 및 이름 검색 지원
  */
 export default async function RecipesPage() {
+  noStore();
   const recipes = await getAllRecipes();
 
   return (

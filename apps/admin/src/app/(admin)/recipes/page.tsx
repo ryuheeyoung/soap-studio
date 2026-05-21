@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { Plus, BookOpen } from "lucide-react";
 import { getAllRecipes } from "@soap-studio/db/queries/recipes";
@@ -8,6 +9,7 @@ import RecipesTable from "@/components/recipes/RecipesTable";
  * @description 레시피 목록 페이지. 이름 검색 및 제조 방식 필터, 추가/수정/삭제 제공
  */
 export default async function RecipesPage() {
+  noStore();
   const recipes = await getAllRecipes();
 
   return (

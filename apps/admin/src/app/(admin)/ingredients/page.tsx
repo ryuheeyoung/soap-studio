@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { Plus, Package, PackagePlus, PackageMinus } from "lucide-react";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
@@ -8,6 +9,7 @@ import IngredientsTable from "@/components/ingredients/IngredientsTable";
  * @description 재료 목록 페이지. 이름 검색 및 카테고리 필터, 추가/수정/삭제 제공
  */
 export default async function IngredientsPage() {
+  noStore();
   const ingredients = await getAllIngredients();
 
   return (

@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
@@ -8,6 +9,7 @@ import StockAdjustPanel from "@/components/ingredients/StockAdjustPanel";
  * @description 구매목록 JSON 붙여넣기 → 재고 일괄 추가 페이지
  */
 export default async function StockAdjustPage() {
+  noStore();
   const ingredients = await getAllIngredients();
 
   return (
