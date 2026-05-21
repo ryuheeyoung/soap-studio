@@ -4,9 +4,9 @@ import { SESSION_COOKIE, isValidSession } from "@/lib/session";
 
 /**
  * @function
- * @description 인증되지 않은 요청을 로그인 페이지로 리다이렉트하는 미들웨어
+ * @description 인증되지 않은 요청을 로그인 페이지로 리다이렉트하는 프록시 (Next.js 16 proxy 컨벤션)
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 로그인 페이지는 통과

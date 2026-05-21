@@ -11,14 +11,19 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Soap Studio",
   description: "수제비누 레시피 & 재료 관리",
-  // manifest는 PWA 설정 시 추가 예정
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Soap Studio",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#18181b",
 };
 
 /**
