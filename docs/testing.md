@@ -95,7 +95,7 @@ Next.js Server Component, `app/` 라우트, Server Action, DB 쿼리.
 
 | 파일 | 위치 | 테스트 수 | 설명 |
 |------|------|-----------|------|
-| `calculate.ts` | `apps/web/src/lib/__tests__/` | 20개 | 재료 소요량 계산, 몰드 추천, 배치 크기 계산 |
+| `calculate.ts` | `apps/web/src/lib/__tests__/` | 33개 | 재료 소요량 계산, 몰드 추천, 배치 크기 계산, 레시피별 몰드 선택 |
 | `session.ts` | `apps/admin/src/lib/__tests__/` | 13개 | 세션 토큰 생성·검증, 상수 |
 
 ### Storybook (UI 컴포넌트)
@@ -220,13 +220,14 @@ afterEach(() => {
 
 > 임계값 상향 기준: 새 함수 추가 시 테스트를 함께 작성하고, 현재 커버리지가 다음 단계 임계값에 근접하면 `vitest.config.ts`를 업데이트.
 
-### 현재 설정 (`apps/admin/vitest.config.ts`)
+### 현재 설정
 
-| 항목 | 현재 임계값 | 목표 임계값 |
-|------|------------|------------|
-| Lines | 30% | 80% |
-| Functions | 30% | 80% |
-| Branches | 20% | 70% |
+| 앱 | Lines | Functions | Branches | 목표 |
+|----|-------|-----------|----------|------|
+| `apps/web` | 5% | 5% | 5% | 80% / 80% / 70% |
+| `apps/admin` | 5% | 5% | 5% | 80% / 80% / 70% |
+
+> 현재 web 실측값: Lines 91%, Functions 85%, Branches 79% — 목표치 초과. 임계값은 admin 커버리지 확보 후 함께 상향 예정.
 
 ---
 

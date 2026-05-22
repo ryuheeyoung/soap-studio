@@ -154,6 +154,18 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO web_reader;
 
 ---
 
+## 배포
+
+| 앱 | URL |
+|----|-----|
+| 공개 앱 (web) | [soap.zzirong.dev](https://soap.zzirong.dev) |
+| 관리자 앱 (admin) | [admin-soap.zzirong.dev](https://admin-soap.zzirong.dev) |
+
+GitHub `main` 브랜치 푸시 시 Vercel에서 자동 배포.  
+각 앱은 동일 레포에서 Root Directory를 `apps/web` / `apps/admin`으로 분리한 별도 Vercel 프로젝트로 운영.
+
+---
+
 ## 라이선스
 
 MIT

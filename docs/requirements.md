@@ -1,6 +1,6 @@
 # Soap Studio — 요구사항 정의
 
-> 최종 업데이트: 2026-05-14
+> 최종 업데이트: 2026-05-21
 > 프로젝트의 핵심 요구사항과 현재 구현 상태 정리 기준 문서.
 
 ---
@@ -122,5 +122,5 @@ ingredient_purchase_options
 | 항목 | 우선순위 | 비고 |
 |------|---------|------|
 | 멀티유저 전환 | 🔴 높음 | 인증(Clerk) + 스키마 user_id 격리 — 별도 마일스톤 |
-| Vercel 배포 | 🟡 중간 | DATABASE_URL 환경변수 설정 필요 |
+| Vercel 배포 | ✅ 완료 | [soap.zzirong.dev](https://soap.zzirong.dev) / [admin-soap.zzirong.dev](https://admin-soap.zzirong.dev) |
 | E2E 테스트 (Playwright) | 🟢 낮음 | 계산기 핵심 플로우 위주, 앱 안정화 후 도입 |
