@@ -27,6 +27,8 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
   const [copied, setCopied] = useState(false);
   // 레시피별 선택된 몰드 ID
   const [moldSelections, setMoldSelections] = useState<Record<string, string | null>>({});
+  // 레시피 ID → Recipe 조회용 맵
+  const recipeMap = new Map(recipes.map((r) => [r.id, r]));
 
   /**
    * @function
@@ -112,6 +114,7 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
           // 이 레시피 단독 기준 재료 계산
           const results = calculateRequirements([item], recipes, ingredients);
           const effectiveBatchSize = Math.round(item.batchSize * item.scale);
+          const recipe = recipeMap.get(item.recipeId);
           // 다른 레시피 선택을 반영한 잔여 칸 기준 몰드 옵션
           const moldOptions = filterMoldsForRecipe(
             effectiveBatchSize,
@@ -126,9 +129,16 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
               <Card borderColor={hasShortage ? "border-red-200 dark:border-red-900" : undefined}>
               {/* 상단: 레시피명 + 배율 + 삭제 */}
               <div className="flex items-center gap-3 p-3">
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  {item.recipeName}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {item.recipeName}
+                  </span>
+                  {recipe?.memo && (
+                    <p className="mt-0.5 text-xs leading-snug text-zinc-400 dark:text-zinc-500">
+                      {recipe.memo}
+                    </p>
+                  )}
+                </div>
 
                 {/* 배율 조정 */}
                 <div className="flex items-center gap-1.5 text-sm">
@@ -171,12 +181,9 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
               {/* 하단: 재료 소요량 + 추천 몰드 */}
               {results.length > 0 && (
                 <div className="border-t border-zinc-100 px-3 pb-3 pt-2.5 dark:border-zinc-800">
-                  <ul className="flex flex-col gap-1">
+                  <ul className="flex flex-col gap-1.5">
                     {results.map((r) => (
-                      <li
-                        key={r.ingredientId}
-                        className="flex items-center justify-between gap-2"
-                      >
+                      <li key={r.ingredientId} className="flex items-center justify-between gap-2">
                         <span
                           className={`truncate text-xs ${
                             r.isSufficient
