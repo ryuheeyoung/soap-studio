@@ -43,6 +43,7 @@ export async function createIngredientAction(formData: FormData) {
 
   await createIngredient(data);
   revalidatePath("/ingredients");
+
   redirect("/ingredients");
 }
 
@@ -64,6 +65,7 @@ export async function updateIngredientAction(id: string, formData: FormData) {
 
   await updateIngredient(id, data);
   revalidatePath("/ingredients");
+
   redirect("/ingredients");
 }
 
@@ -75,6 +77,7 @@ export async function updateIngredientAction(id: string, formData: FormData) {
 export async function deleteIngredientAction(id: string) {
   await deleteIngredient(id);
   revalidatePath("/ingredients");
+
 }
 
 /**
@@ -87,6 +90,7 @@ export async function batchAdjustStockAction(
 ) {
   await batchAdjustStock(items.map(({ ingredientId, add }) => ({ id: ingredientId, add })));
   revalidatePath("/ingredients");
+
 }
 
 /**
@@ -99,4 +103,5 @@ export async function batchDeductStockAction(
 ) {
   await batchDeductStock(items.map(({ ingredientId, deduct }) => ({ id: ingredientId, deduct })));
   revalidatePath("/ingredients");
+
 }

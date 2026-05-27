@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
 import { createMold, updateMold, deleteMold } from "@soap-studio/db/queries/molds";
 import type { Mold } from "@soap-studio/types";
 
@@ -21,6 +22,7 @@ export async function createMoldAction(formData: FormData) {
 
   await createMold(data);
   revalidatePath("/molds");
+
   redirect("/molds");
 }
 
@@ -41,6 +43,7 @@ export async function updateMoldAction(id: string, formData: FormData) {
 
   await updateMold(id, data);
   revalidatePath("/molds");
+
   redirect("/molds");
 }
 
@@ -52,4 +55,5 @@ export async function updateMoldAction(id: string, formData: FormData) {
 export async function deleteMoldAction(id: string) {
   await deleteMold(id);
   revalidatePath("/molds");
+
 }

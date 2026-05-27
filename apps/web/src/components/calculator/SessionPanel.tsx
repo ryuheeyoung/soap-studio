@@ -129,16 +129,9 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
               <Card borderColor={hasShortage ? "border-red-200 dark:border-red-900" : undefined}>
               {/* 상단: 레시피명 + 배율 + 삭제 */}
               <div className="flex items-center gap-3 p-3">
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    {item.recipeName}
-                  </span>
-                  {recipe?.memo && (
-                    <p className="mt-0.5 text-xs leading-snug text-zinc-400 dark:text-zinc-500">
-                      {recipe.memo}
-                    </p>
-                  )}
-                </div>
+                <span className="min-w-0 flex-1 block truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                  {item.recipeName}
+                </span>
 
                 {/* 배율 조정 */}
                 <div className="flex items-center gap-1.5 text-sm">
@@ -177,6 +170,15 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                   <X size={14} />
                 </button>
               </div>
+
+              {/* 메모: 전체 너비, 줄바꿈 유지 */}
+              {recipe?.memo && (
+                <div className="px-3 pb-2">
+                  <p className="text-xs leading-snug text-zinc-400 whitespace-pre-line dark:text-zinc-500">
+                    {recipe.memo}
+                  </p>
+                </div>
+              )}
 
               {/* 하단: 재료 소요량 + 추천 몰드 */}
               {results.length > 0 && (

@@ -13,6 +13,7 @@ soap-studio/
     types/      → 공유 타입 + 상수 (@soap-studio/types)
     db/         → Drizzle ORM 스키마 & 쿼리 (@soap-studio/db)
     ui/         → 공유 UI 컴포넌트 + Storybook (@soap-studio/ui)
+    api/        → tRPC router (예정, @soap-studio/api)
   turbo.json
   package.json
 ```
@@ -53,6 +54,42 @@ soap-studio/
 
 ---
 
+## 데이터 페칭 전략
+
+### 현재 (임시)
+
+web Server Component에서 `@soap-studio/db` 쿼리를 직접 호출. `noStore()`로 캐시 비활성화.
+
+```
+web page.tsx → getAllRecipes() (DB 직접) → props 전달
+```
+
+- 문제: 매 요청마다 Neon 콜드스타트 포함 전체 쿼리 재실행 → 페이지 이동 시 수십 초 소요
+
+### 목표: tRPC + TanStack Query
+
+`packages/api`에 tRPC router를 정의하고, web은 tRPC 클라이언트로 데이터 페칭.
+admin과 web의 결합 없이 각자 독립적으로 동작.
+
+```
+packages/api (tRPC router)
+  ├── recipesRouter   → getAllRecipes()
+  ├── ingredientsRouter → getAllIngredients()
+  └── moldsRouter     → getAllMolds()
+
+apps/web (tRPC client + TanStack Query)
+  └── trpc.recipes.getAll.useQuery()
+      staleTime: 30s, refetchOnWindowFocus: true
+```
+
+**선택 이유**
+- end-to-end 타입 안전성 (schema 없이 TypeScript 타입 자동 추론)
+- TanStack Query 캐싱으로 탭 이동 시 즉시 응답, 백그라운드 갱신
+- admin → web 간 결합 없음 (revalidation API 불필요)
+- web 앱에서 DB 직접 접근 제거 → `DATABASE_URL` 환경변수 불필요
+
+---
+
 ## 공유 패키지
 
 ### @soap-studio/types
@@ -71,7 +108,7 @@ Drizzle ORM 스키마 및 쿼리 함수. DB 접근 권한은 앱별로 분리.
 | 앱 | DB 롤 | 권한 |
 |----|-------|------|
 | `apps/admin` | `neondb_owner` | 읽기 + 쓰기 |
-| `apps/web` | `web_reader` | 읽기 전용 |
+| `packages/api` (tRPC, 예정) | `web_reader` | 읽기 전용 |
 
 ### @soap-studio/ui
 
@@ -80,6 +117,10 @@ Drizzle ORM 스키마 및 쿼리 함수. DB 접근 권한은 앱별로 분리.
 - 컴포넌트: `Button`, `Input`, `Textarea`, `Select`, `FormLabel`, `Card`, `AlertPanel`, `Badge`, `Table`
 - Storybook 8 + Vite로 시각적 검증 (`cd packages/ui && npm run storybook`)
 - 각 앱의 `globals.css`에 `@source` 디렉티브로 Tailwind 스캔 경로 추가
+
+### @soap-studio/api (예정)
+
+tRPC router. `@soap-studio/db` 쿼리를 감싸 type-safe API 제공.
 
 ---
 

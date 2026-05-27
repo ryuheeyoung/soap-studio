@@ -31,6 +31,8 @@ DIY 비누 제작을 위한 레시피 · 재료 · 재고 관리 플랫폼.
 | 프레임워크 | [Next.js](https://nextjs.org/) (App Router) |
 | 데이터베이스 | [Neon](https://neon.tech/) PostgreSQL |
 | ORM | [Drizzle ORM](https://orm.drizzle.team/) |
+| API | [tRPC](https://trpc.io/) (예정) |
+| 데이터 페칭 | [TanStack Query](https://tanstack.com/query) (예정) |
 | 스타일 | [Tailwind CSS](https://tailwindcss.com/) |
 | 상태관리 | [Zustand](https://zustand-demo.pmnd.rs/) |
 | 언어 | TypeScript |
@@ -45,6 +47,7 @@ soap-studio/
 │   ├── admin/          # 관리자 대시보드 (Next.js)
 │   └── web/            # 공개 웹 앱 (Next.js)
 ├── packages/
+│   ├── api/            # tRPC router — type-safe API 정의 (예정)
 │   ├── db/             # Drizzle ORM 스키마 · 쿼리 · 마이그레이션
 │   ├── types/          # 공유 TypeScript 타입 및 상수
 │   └── ui/             # 공유 UI 컴포넌트 라이브러리 + Storybook

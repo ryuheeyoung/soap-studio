@@ -1,29 +1,37 @@
-import { unstable_noStore as noStore } from "next/cache";
-import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
-import { getAllRecipes } from "@soap-studio/db/queries/recipes";
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
 import IngredientsFilter from "@/components/ingredients/IngredientsFilter";
+import type { Recipe } from "@soap-studio/types";
+
+/**
+ * @function
+ * @description 레시피 목록에서 재료 ID별 최소 필요량 맵 계산
+ * @param {Recipe[]} recipes - 전체 레시피 목록
+ * @returns {Record<string, number>} 재료 ID → 최소 필요량
+ */
+function buildMinRequiredMap(recipes: Recipe[]): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const recipe of recipes) {
+    for (const ing of recipe.ingredients) {
+      const min = ing.amountMin ?? ing.fixedAmount;
+      if (min == null) continue;
+      const prev = map[ing.ingredientId];
+      map[ing.ingredientId] = prev == null ? min : Math.min(prev, min);
+    }
+  }
+  return map;
+}
 
 /**
  * @component
  * @description 재료 재고 현황 페이지. 카테고리별 그룹으로 재고량 표시, 이름 검색 지원
  */
-export default async function IngredientsPage() {
-  noStore();
-  const [ingredients, recipes] = await Promise.all([
-    getAllIngredients(),
-    getAllRecipes(),
-  ]);
+export default function IngredientsPage() {
+  const { data: ingredients = [] } = trpc.ingredients.getAll.useQuery();
+  const { data: recipes = [] } = trpc.recipes.getAll.useQuery();
 
-  // 재료 ID별 최소 필요량 맵 — 모든 레시피에서 해당 재료의 amountMin(또는 fixedAmount) 최솟값
-  const minRequiredMap: Record<string, number> = {};
-  for (const recipe of recipes) {
-    for (const ing of recipe.ingredients) {
-      const min = ing.amountMin ?? ing.fixedAmount;
-      if (min == null) continue;
-      const prev = minRequiredMap[ing.ingredientId];
-      minRequiredMap[ing.ingredientId] = prev == null ? min : Math.min(prev, min);
-    }
-  }
+  const minRequiredMap = buildMinRequiredMap(recipes);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

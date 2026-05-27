@@ -1,14 +1,14 @@
-import { unstable_noStore as noStore } from "next/cache";
-import { getAllRecipes } from "@soap-studio/db/queries/recipes";
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
 import RecipesFilter from "@/components/recipes/RecipesFilter";
 
 /**
  * @component
  * @description 레시피 목록 페이지. 카드 형태로 표시하고 계산기 세션 추가 및 이름 검색 지원
  */
-export default async function RecipesPage() {
-  noStore();
-  const recipes = await getAllRecipes();
+export default function RecipesPage() {
+  const { data: recipes = [] } = trpc.recipes.getAll.useQuery();
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
