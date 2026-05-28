@@ -198,12 +198,8 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                       const substituteDef = substituteMap.get(originalId);
                       const isSubstituteActive = !!r.originalIngredientId;
 
-                      // 범위 재료 여부 및 현재 조정값
+                      // 범위 재료 여부
                       const isRange = recipeIng?.amountMin != null && recipeIng?.amountMax != null;
-                      const currentAmount = item.amountOverrides?.[originalId]
-                        ?? recipeIng?.amountMin
-                        ?? recipeIng?.fixedAmount
-                        ?? 0;
 
                       // 대체재료 이름
                       const substituteName = substituteDef
