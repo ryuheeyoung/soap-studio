@@ -3,6 +3,11 @@ import { calculateRequirements, recommendMolds, calcTotalBatchSize, filterMoldsF
 import type { Recipe, Ingredient, Mold } from "@soap-studio/types";
 import type { SessionItem } from "@/stores/session";
 
+// 테스트용 SessionItem 생성 헬퍼 — 새 필드의 기본값 자동 적용
+function makeItem(base: Pick<SessionItem, "recipeId" | "recipeName" | "batchSize" | "scale"> & Partial<SessionItem>): SessionItem {
+  return { amountOverrides: {}, selectedSubstitutes: {}, ...base };
+}
+
 // ─── 공통 픽스처 ─────────────────────────────────────────────────────────────
 // 각 테스트에서 독립적으로 사용하기 위해 beforeEach에서 재할당
 
@@ -112,7 +117,7 @@ describe("calcTotalBatchSize", () => {
   it("should return batchSize as-is when scale is 1", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -130,7 +135,7 @@ describe("calcTotalBatchSize", () => {
   ])("should return $expected when scale is $scale", ({ scale, expected }) => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale },
+      makeItem({ recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale }),
     ];
 
     // Act
@@ -143,8 +148,8 @@ describe("calcTotalBatchSize", () => {
   it("should sum batch sizes across multiple recipes", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale: 1 },
-      { recipeId: "r2", recipeName: "레시피B", batchSize: 300, scale: 2 },
+      makeItem({ recipeId: "r1", recipeName: "레시피A", batchSize: 500, scale: 1 }),
+      makeItem({ recipeId: "r2", recipeName: "레시피B", batchSize: 300, scale: 2 }),
     ];
 
     // Act
@@ -169,7 +174,7 @@ describe("calculateRequirements", () => {
   it("should ignore items whose recipe does not exist", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "no-such-recipe", recipeName: "없음", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "no-such-recipe", recipeName: "없음", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -182,7 +187,7 @@ describe("calculateRequirements", () => {
   it("should mark ingredient as sufficient when stock >= required", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -200,7 +205,7 @@ describe("calculateRequirements", () => {
     // Arrange
     // 정제수: 재고 10g, 필요량 140g → 부족량 130g
     const items: SessionItem[] = [
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -215,7 +220,7 @@ describe("calculateRequirements", () => {
   it("should scale required amount by the given scale factor", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 2 },
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 2 }),
     ];
 
     // Act
@@ -229,7 +234,7 @@ describe("calculateRequirements", () => {
   it("should place insufficient ingredients before sufficient ones", () => {
     // Arrange
     const items: SessionItem[] = [
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -244,8 +249,8 @@ describe("calculateRequirements", () => {
   it("should aggregate requirements from multiple session items", () => {
     // Arrange — 동일 레시피를 두 세션에 각각 1배, 1배 담음 → 합산 2배 필요
     const items: SessionItem[] = [
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 },
-      { recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 },
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 }),
+      makeItem({ recipeId: "recipe-1", recipeName: "테스트 비누", batchSize: 500, scale: 1 }),
     ];
 
     // Act
@@ -254,6 +259,89 @@ describe("calculateRequirements", () => {
 
     // Assert
     expect(oil.required).toBe(600); // 300 * 2
+  });
+
+  it("should use amountOverride instead of fixedAmount when set", () => {
+    // Arrange — 오일 오버라이드 200g (기본 300g)
+    const items: SessionItem[] = [
+      makeItem({
+        recipeId: "recipe-1",
+        recipeName: "테스트 비누",
+        batchSize: 500,
+        scale: 1,
+        amountOverrides: { "ing-oil": 200 },
+      }),
+    ];
+
+    // Act
+    const result = calculateRequirements(items, [recipe], ingredients);
+    const oil = result.find((r) => r.ingredientId === "ing-oil")!;
+
+    // Assert
+    expect(oil.required).toBe(200);
+  });
+
+  it("should use substitute ingredient when selectedSubstitutes is set", () => {
+    // Arrange — 오일 대체재료 등록된 레시피
+    const recipeWithSub: Recipe = {
+      ...recipe,
+      substitutes: [
+        {
+          originalIngredientId: "ing-oil",
+          substituteIngredientId: "ing-lye",
+          memo: "테스트 대체",
+        },
+      ],
+    };
+    const items: SessionItem[] = [
+      makeItem({
+        recipeId: "recipe-1",
+        recipeName: "테스트 비누",
+        batchSize: 500,
+        scale: 1,
+        selectedSubstitutes: { "ing-oil": "ing-lye" },
+      }),
+    ];
+
+    // Act
+    const result = calculateRequirements(items, [recipeWithSub], ingredients);
+
+    // Assert — 원래 오일(ing-oil) 결과는 없고, 대체재료(ing-lye)에 합산
+    const oil = result.find((r) => r.ingredientId === "ing-oil");
+    const lye = result.find((r) => r.ingredientId === "ing-lye")!;
+    expect(oil).toBeUndefined();
+    expect(lye.required).toBe(360); // 오일 300g + 가성소다 60g
+    expect(lye.originalIngredientId).toBe("ing-oil");
+  });
+
+  it("should apply substituteRatio when set", () => {
+    // Arrange — 대체재료 사용 시 0.5배 적용
+    const recipeWithRatio: Recipe = {
+      ...recipe,
+      substitutes: [
+        {
+          originalIngredientId: "ing-oil",
+          substituteIngredientId: "ing-lye",
+          substituteRatio: 0.5,
+        },
+      ],
+    };
+    const items: SessionItem[] = [
+      makeItem({
+        recipeId: "recipe-1",
+        recipeName: "테스트 비누",
+        batchSize: 500,
+        scale: 1,
+        selectedSubstitutes: { "ing-oil": "ing-lye" },
+      }),
+    ];
+
+    // Act
+    const result = calculateRequirements(items, [recipeWithRatio], ingredients);
+    const lye = result.find((r) => r.ingredientId === "ing-lye")!;
+
+    // Assert — 오일 300g * 0.5 + 가성소다 60g = 210g
+    expect(lye.required).toBe(210);
   });
 });
 

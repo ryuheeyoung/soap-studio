@@ -4,6 +4,8 @@ import type { SessionItem } from "@/stores/session";
 // 재료별 계산 결과
 export interface IngredientResult {
   ingredientId: string;
+  // 대체재료 선택 시 원래 재료 ID (UI 컨트롤 렌더링 기준)
+  originalIngredientId?: string;
   name: string;
   unit: string;
   category: string;
@@ -58,23 +60,48 @@ export function calculateRequirements(
 ): IngredientResult[] {
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
   const ingredientMap = new Map(ingredients.map((i) => [i.id, i]));
-  const required = new Map<string, number>();
+
+  // effectiveIngredientId → { requiredAmount, originalIngredientId }
+  const required = new Map<string, { amount: number; originalId?: string }>();
 
   for (const item of items) {
     const recipe = recipeMap.get(item.recipeId);
     if (!recipe) continue;
 
+    // originalIngredientId → RecipeSubstitute 맵
+    const substituteMap = new Map(
+      recipe.substitutes.map((s) => [s.originalIngredientId, s])
+    );
+
     for (const ing of recipe.ingredients) {
-      const amount = getEffectiveAmount(ing);
+      // 대체재료 선택 여부 확인
+      const selectedSubId = item.selectedSubstitutes?.[ing.ingredientId];
+      const substitute = substituteMap.get(ing.ingredientId);
+      const effectiveIngId = selectedSubId ?? ing.ingredientId;
+      const isSubstitute = !!selectedSubId;
+
+      // 사용량: 오버라이드 → 기본값 순
+      let amount = item.amountOverrides?.[ing.ingredientId] ?? getEffectiveAmount(ing);
       if (amount == null) continue;
+
+      // 대체재료에 비율 조정값이 있으면 적용
+      if (isSubstitute && substitute?.substituteRatio != null) {
+        amount = amount * substitute.substituteRatio;
+      }
+
       const scaled = amount * item.scale;
-      required.set(ing.ingredientId, (required.get(ing.ingredientId) ?? 0) + scaled);
+      const prev = required.get(effectiveIngId);
+      required.set(effectiveIngId, {
+        amount: (prev?.amount ?? 0) + scaled,
+        // 대체재료면 원본 ID 기록, 아니면 이전 값 유지 (동일 재료가 합산될 때 덮어쓰기 방지)
+        originalId: isSubstitute ? ing.ingredientId : prev?.originalId,
+      });
     }
   }
 
   const results: IngredientResult[] = [];
 
-  for (const [ingredientId, requiredAmount] of required) {
+  for (const [ingredientId, { amount: requiredAmount, originalId }] of required) {
     const ingredient = ingredientMap.get(ingredientId);
     if (!ingredient) continue;
 
@@ -83,6 +110,7 @@ export function calculateRequirements(
 
     results.push({
       ingredientId,
+      originalIngredientId: originalId,
       name: ingredient.name,
       unit: ingredient.unit,
       category: ingredient.category,

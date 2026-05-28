@@ -22,13 +22,15 @@ interface Props {
  * @param {Mold[]} props.molds - 전체 몰드 목록
  */
 export default function SessionPanel({ recipes, ingredients, molds }: Props) {
-  const { items, setScale, removeRecipe, clearSession } = useSessionStore();
+  const { items, setScale, removeRecipe, clearSession, setAmountOverride, setSubstitute } = useSessionStore();
   // 소요량 복사 완료 상태
   const [copied, setCopied] = useState(false);
   // 레시피별 선택된 몰드 ID
   const [moldSelections, setMoldSelections] = useState<Record<string, string | null>>({});
   // 레시피 ID → Recipe 조회용 맵
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
+  // 재료 ID → Ingredient 조회용 맵
+  const ingredientMap = new Map(ingredients.map((i) => [i.id, i]));
 
   /**
    * @function
@@ -45,7 +47,6 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
       const item = items.find((i) => i.recipeId === recipeId);
       if (!item) continue;
       const batchSize = Math.round(item.batchSize * item.scale);
-      // optionKey는 단일 moldId 또는 "moldId1+moldId2" 형태
       const moldIds = optionKey.split("+");
       const selectedMolds = moldIds.map((id) => molds.find((m) => m.id === id)).filter((m): m is Mold => !!m);
       if (selectedMolds.length === 0) continue;
@@ -55,7 +56,6 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
         const cellsUsed = Math.ceil(batchSize / mold.weightPerCell);
         available[mold.id] = Math.max(0, (available[mold.id] ?? mold.cellCount) - cellsUsed);
       } else {
-        // 조합: 첫 번째 몰드 전체 사용, 나머지를 두 번째로
         const [first, second] = selectedMolds;
         available[first.id] = Math.max(0, (available[first.id] ?? first.cellCount) - first.cellCount);
         const remainder = batchSize - first.cellCount * first.weightPerCell;
@@ -111,11 +111,9 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
 
       <ul className="flex flex-col gap-2">
         {items.map((item) => {
-          // 이 레시피 단독 기준 재료 계산
           const results = calculateRequirements([item], recipes, ingredients);
           const effectiveBatchSize = Math.round(item.batchSize * item.scale);
           const recipe = recipeMap.get(item.recipeId);
-          // 다른 레시피 선택을 반영한 잔여 칸 기준 몰드 옵션
           const moldOptions = filterMoldsForRecipe(
             effectiveBatchSize,
             molds,
@@ -123,6 +121,15 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
           );
           const selectedMoldId = moldSelections[item.recipeId] ?? null;
           const hasShortage = results.some((r) => !r.isSufficient);
+
+          // originalIngredientId → RecipeIngredient 맵 (범위·대체 컨트롤 렌더링용)
+          const recipeIngMap = new Map(
+            recipe?.ingredients.map((ing) => [ing.ingredientId, ing]) ?? []
+          );
+          // originalIngredientId → RecipeSubstitute 맵
+          const substituteMap = new Map(
+            recipe?.substitutes.map((s) => [s.originalIngredientId, s]) ?? []
+          );
 
           return (
             <li key={item.recipeId}>
@@ -183,34 +190,135 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
               {/* 하단: 재료 소요량 + 추천 몰드 */}
               {results.length > 0 && (
                 <div className="border-t border-zinc-100 px-3 pb-3 pt-2.5 dark:border-zinc-800">
-                  <ul className="flex flex-col gap-1.5">
-                    {results.map((r) => (
-                      <li key={r.ingredientId} className="flex items-center justify-between gap-2">
-                        <span
-                          className={`truncate text-xs ${
-                            r.isSufficient
-                              ? "text-zinc-400 dark:text-zinc-500"
-                              : "font-medium text-zinc-700 dark:text-zinc-300"
-                          }`}
-                        >
-                          {r.name}
-                          <span className="ml-1 text-zinc-300 dark:text-zinc-600">
-                            {INGREDIENT_CATEGORY_LABELS[r.category as IngredientCategory] ?? r.category}
-                          </span>
-                        </span>
-                        <span
-                          className={`shrink-0 text-xs tabular-nums ${
-                            r.isSufficient
-                              ? "text-zinc-400 dark:text-zinc-500"
-                              : "font-semibold text-red-500"
-                          }`}
-                        >
-                          {r.required}
-                          <span className="mx-0.5 text-zinc-300 dark:text-zinc-600">/</span>
-                          {r.inStock}{r.unit}
-                        </span>
-                      </li>
-                    ))}
+                  <ul className="flex flex-col gap-2">
+                    {results.map((r) => {
+                      // 원래 재료 ID (대체재료 선택 중이면 originalIngredientId, 아니면 ingredientId)
+                      const originalId = r.originalIngredientId ?? r.ingredientId;
+                      const recipeIng = recipeIngMap.get(originalId);
+                      const substituteDef = substituteMap.get(originalId);
+                      const isSubstituteActive = !!r.originalIngredientId;
+
+                      // 범위 재료 여부 및 현재 조정값
+                      const isRange = recipeIng?.amountMin != null && recipeIng?.amountMax != null;
+                      const currentAmount = item.amountOverrides?.[originalId]
+                        ?? recipeIng?.amountMin
+                        ?? recipeIng?.fixedAmount
+                        ?? 0;
+
+                      // 대체재료 이름
+                      const substituteName = substituteDef
+                        ? ingredientMap.get(substituteDef.substituteIngredientId)?.name
+                        : null;
+
+                      // 오버라이드 여부 (리셋 버튼 표시 기준)
+                      const isOverridden = item.amountOverrides?.[originalId] != null;
+
+                      return (
+                        <li key={r.ingredientId} className="flex flex-col gap-1">
+                          {/* 재료명 + 소요량/재고 */}
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`truncate text-xs ${
+                                r.isSufficient
+                                  ? "text-zinc-400 dark:text-zinc-500"
+                                  : "font-medium text-zinc-700 dark:text-zinc-300"
+                              }`}
+                            >
+                              {r.name}
+                              <span className="ml-1 text-zinc-300 dark:text-zinc-600">
+                                {INGREDIENT_CATEGORY_LABELS[r.category as IngredientCategory] ?? r.category}
+                              </span>
+                            </span>
+                            <div className="flex shrink-0 items-center gap-1">
+                              {/* 범위 재료: 필요량을 직접 입력 가능한 input으로 표시 */}
+                              {isRange && recipeIng ? (
+                                <input
+                                  type="number"
+                                  value={r.required}
+                                  min={recipeIng.amountMin! * item.scale}
+                                  max={recipeIng.amountMax! * item.scale}
+                                  step={1}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val) && val > 0) {
+                                      setAmountOverride(
+                                        item.recipeId,
+                                        originalId,
+                                        Math.round((val / item.scale) * 100) / 100
+                                      );
+                                    }
+                                  }}
+                                  className={`w-12 bg-transparent text-right text-xs tabular-nums focus:outline-none focus:border-b focus:border-zinc-400 dark:focus:border-zinc-500 ${
+                                    r.isSufficient
+                                      ? isOverridden
+                                        ? "text-zinc-600 dark:text-zinc-300"
+                                        : "text-zinc-400 dark:text-zinc-500"
+                                      : "font-semibold text-red-500"
+                                  }`}
+                                />
+                              ) : (
+                                <span
+                                  className={`text-xs tabular-nums ${
+                                    r.isSufficient
+                                      ? "text-zinc-400 dark:text-zinc-500"
+                                      : "font-semibold text-red-500"
+                                  }`}
+                                >
+                                  {r.required}
+                                </span>
+                              )}
+                              <span className="text-xs text-zinc-300 dark:text-zinc-600">/</span>
+                              <span
+                                className={`text-xs tabular-nums ${
+                                  r.isSufficient ? "text-zinc-400 dark:text-zinc-500" : "text-red-500"
+                                }`}
+                              >
+                                {r.inStock}{r.unit}
+                              </span>
+                              {/* 오버라이드 중일 때 리셋 버튼 */}
+                              {isOverridden && (
+                                <button
+                                  type="button"
+                                  onClick={() => setAmountOverride(item.recipeId, originalId, null)}
+                                  className="text-[10px] text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+                                  title="기본값으로 되돌리기"
+                                >
+                                  ↺
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 범위 힌트 텍스트 */}
+                          {isRange && recipeIng && (
+                            <p className="text-[11px] text-zinc-300 dark:text-zinc-600">
+                              {recipeIng.amountMin}~{recipeIng.amountMax}{r.unit}
+                            </p>
+                          )}
+
+                          {/* 대체재료 토글 */}
+                          {substituteDef && substituteName && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSubstitute(
+                                  item.recipeId,
+                                  originalId,
+                                  isSubstituteActive ? null : substituteDef.substituteIngredientId
+                                )
+                              }
+                              className={`self-start rounded-full border px-2 py-0.5 text-[11px] transition ${
+                                isSubstituteActive
+                                  ? "border-zinc-600 bg-zinc-700 text-white dark:border-zinc-400 dark:bg-zinc-200 dark:text-zinc-900"
+                                  : "border-zinc-200 text-zinc-400 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-500"
+                              }`}
+                            >
+                              {isSubstituteActive ? `↩ 원래: ${r.name}` : `↔ 대체: ${substituteName}`}
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {/* 몰드 선택 */}
