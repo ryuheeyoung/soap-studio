@@ -1,20 +1,16 @@
-import { unstable_noStore as noStore } from "next/cache";
-import { getAllRecipes } from "@soap-studio/db/queries/recipes";
-import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
-import { getAllMolds } from "@soap-studio/db/queries/molds";
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
 import CalculatorView from "@/components/calculator/CalculatorView";
 
 /**
  * @component
- * @description 제작 계산기 페이지. 전체 데이터를 서버에서 조회 후 클라이언트 뷰에 전달
+ * @description 제작 계산기 페이지. 레시피·재료·몰드 데이터를 tRPC로 조회 후 클라이언트 뷰에 전달
  */
-export default async function CalculatorPage() {
-  noStore();
-  const [recipes, ingredients, molds] = await Promise.all([
-    getAllRecipes(),
-    getAllIngredients(),
-    getAllMolds(),
-  ]);
+export default function CalculatorPage() {
+  const { data: recipes = [] } = trpc.recipes.getAll.useQuery();
+  const { data: ingredients = [] } = trpc.ingredients.getAll.useQuery();
+  const { data: molds = [] } = trpc.molds.getAll.useQuery();
 
   return (
     <CalculatorView

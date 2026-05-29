@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import BottomNav from "@/components/layout/BottomNav";
+import { TRPCProvider } from "@/lib/trpc/provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,8 +39,10 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-zinc-50 dark:bg-zinc-950">
-        <main className="flex flex-1 flex-col pb-16">{children}</main>
-        <BottomNav />
+        <TRPCProvider>
+          <main className="flex flex-1 flex-col pb-16">{children}</main>
+          <BottomNav />
+        </TRPCProvider>
       </body>
     </html>
   );

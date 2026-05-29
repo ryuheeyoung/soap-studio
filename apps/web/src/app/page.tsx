@@ -1,19 +1,16 @@
-import { unstable_noStore as noStore } from "next/cache";
+"use client";
+
 import Link from "next/link";
-import { getAllIngredients } from "@soap-studio/db/queries/ingredients";
-import { getAllRecipes } from "@soap-studio/db/queries/recipes";
+import { trpc } from "@/lib/trpc/client";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
 
 /**
  * @component
  * @description 홈 대시보드. 재고 소진 재료 요약 + 최근 등록 레시피를 한 화면에 표시
  */
-export default async function HomePage() {
-  noStore();
-  const [ingredients, recipes] = await Promise.all([
-    getAllIngredients(),
-    getAllRecipes(),
-  ]);
+export default function HomePage() {
+  const { data: ingredients = [] } = trpc.ingredients.getAll.useQuery();
+  const { data: recipes = [] } = trpc.recipes.getAll.useQuery();
 
   // 재고 소진 재료
   const outOfStock = ingredients.filter((i) => i.stock === 0);
