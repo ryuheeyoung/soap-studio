@@ -30,6 +30,18 @@
 
 ---
 
+## 2026-05-29
+
+- `packages/ui`에 `Stepper` 공유 컴포넌트 추가 (`[−] value [+]`, `editable` prop으로 직접 입력 지원)
+- admin `RecipeForm` 재료 행에 고정/범위 토글 추가 — 범위 선택 시 min~max 두 입력란 표시
+- web 레시피 계산기 `SessionPanel` 범위 재료 입력 UX 개선
+  - `editingAmounts` 로컬 상태로 중간값·빈값 허용 (`onChange` 로컬만, `onBlur`에서 클램핑 후 스토어 저장)
+  - 리셋 버튼 input 내부 절대 배치, `tabIndex={-1}`로 Tab 키 스킵, `onMouseDown + preventDefault`로 blur 차단
+  - 이벤트 핸들러 전체 선언형 named 함수로 분리 리팩토링
+- AGENTS.md 이벤트 핸들러 선언형 작성 규칙 및 커밋 빈도 규칙 추가
+
+---
+
 ## 2026-05-18
 
 - `docs/testing.md`에 대상별 개발 워크플로우 섹션 추가

@@ -86,6 +86,7 @@ content: [
 | `FormLabel` | 🔴 | default, sm | `<label>` 래퍼 |
 | `Badge` | 🟡 | default, colored | 공정타입(MP/CP/HP) 색상 포함 |
 | `Table` | 🟡 | — | Th, Td, Tr 서브컴포넌트 분리 |
+| `Stepper` | 🟡 | default, editable | `[−] value [+]` 수량 조절. `editable=true`일 때 직접 입력 지원 |
 | `SectionHeader` | 🟡 | default, uppercase | 카테고리 헤더 등 |
 
 ---
@@ -149,4 +150,5 @@ export const Disabled: Story = {
 | FormLabel | ✅ | ✅ | ✅ (admin: IngredientForm, MoldForm, StockAdjustPanel, StockDeductPanel, RecipeForm) |
 | Badge | ✅ | ✅ | ✅ (web: recipes/page) |
 | Table | ✅ | ✅ | ✅ (admin: StockAdjustPanel, StockDeductPanel) |
+| Stepper | ✅ | ✅ | ✅ (web: SessionPanel 배율·구매수량 조정 / admin: 추후 적용) |
 | SectionHeader | ⬜ | ⬜ | ⬜ |

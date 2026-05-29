@@ -24,3 +24,6 @@ export type { BadgeProps } from "./components/Badge";
 
 export { TableWrapper, Table, Th, Td } from "./components/Table";
 export type { ThProps, TdProps } from "./components/Table";
+
+export { Stepper } from "./components/Stepper";
+export type { StepperProps } from "./components/Stepper";

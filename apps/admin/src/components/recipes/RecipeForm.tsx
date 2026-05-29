@@ -19,7 +19,11 @@ interface IngredientRow {
   // 드롭다운 미선택 시 신규 등록할 재료명
   newIngredientName: string;
   groupLabel: string;
+  // isRange=false: 고정값 모드, isRange=true: 범위 모드
+  isRange: boolean;
   amount: string;
+  amountMin: string;
+  amountMax: string;
   // 선택/신규 재료의 단위 (g / ml / ea)
   unit: string;
 }
@@ -51,11 +55,15 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
       const found = allIngredients.find((i) => i.id === ing.ingredientId);
       // 재료 category에서 그룹 레이블 파생 (DB에 저장하지 않음)
       const groupLabel = found ? INGREDIENT_CATEGORY_LABELS[found.category] : "";
+      const isRange = ing.amountMin != null || ing.amountMax != null;
       return {
         ingredientId: ing.ingredientId,
         newIngredientName: "",
         groupLabel,
+        isRange,
         amount: ing.fixedAmount != null ? String(ing.fixedAmount) : "",
+        amountMin: ing.amountMin != null ? String(ing.amountMin) : "",
+        amountMax: ing.amountMax != null ? String(ing.amountMax) : "",
         unit: found?.unit ?? "",
       };
     });
@@ -108,7 +116,7 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
 
   function addIngredientRow() {
     setIngredientRows((prev) => [...prev, {
-      ingredientId: "", newIngredientName: "", groupLabel: "", amount: "", unit: "",
+      ingredientId: "", newIngredientName: "", groupLabel: "", isRange: false, amount: "", amountMin: "", amountMax: "", unit: "",
     }]);
     setIngSearches((prev) => [...prev, ""]);
   }
@@ -154,7 +162,9 @@ export default function RecipeForm({ action, defaultValues, allIngredients, subm
         ingredientId: row.ingredientId || undefined,
         newIngredientName: row.newIngredientName || undefined,
         newIngredientUnit: row.newIngredientName ? (row.unit || "g") : undefined,
-        fixedAmount: row.amount ? Number(row.amount) : undefined,
+        fixedAmount: !row.isRange && row.amount ? Number(row.amount) : undefined,
+        amountMin: row.isRange && row.amountMin ? Number(row.amountMin) : undefined,
+        amountMax: row.isRange && row.amountMax ? Number(row.amountMax) : undefined,
         isOptional: false,
       }));
 
@@ -483,6 +493,14 @@ interface IngredientRowItemProps {
   onRemove: () => void;
 }
 
+// 고정/범위 모드 토글 버튼 스타일
+const modeTabClass = (active: boolean) =>
+  `px-2 py-0.5 text-[11px] rounded transition ${
+    active
+      ? "bg-zinc-700 text-white dark:bg-zinc-200 dark:text-zinc-900"
+      : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+  }`;
+
 /**
  * @component
  * @description 레시피 재료 한 행. 재료 검색 + 용량 입력 포함
@@ -553,38 +571,74 @@ function IngredientRowItem({ row, search, suggestions, canAddNew, onSearchChange
         </button>
       </div>
 
-      {/* 2행: 그룹 태그 · 용량(+단위) */}
-      <div className="flex items-center gap-2">
+      {/* 2행: 그룹 태그 · 고정/범위 토글 · 용량 입력 */}
+      <div className="flex items-center gap-2 flex-wrap">
         {row.groupLabel && (
           <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
             {row.groupLabel}
           </span>
         )}
-        <div className="flex shrink-0 items-center gap-1">
-          <Input
-            variant="sm"
-            type="number"
-            value={row.amount}
-            onChange={(e) => onChange({ amount: e.target.value })}
-            className="w-20"
-            placeholder="용량"
-            step="0.01"
-          />
-          {isNew ? (
-            // 신규 재료는 단위를 직접 선택
-            <Select
-              variant="sm"
-              value={row.unit || "g"}
-              onChange={(e) => onChange({ unit: e.target.value })}
-            >
-              <option value="g">g</option>
-              <option value="ml">ml</option>
-              <option value="ea">ea</option>
-            </Select>
-          ) : (
-            row.unit && <span className="text-xs text-zinc-400">{row.unit}</span>
-          )}
+
+        {/* 고정 / 범위 토글 */}
+        <div className="flex shrink-0 rounded border border-zinc-200 dark:border-zinc-700">
+          <button type="button" className={modeTabClass(!row.isRange)} onClick={() => onChange({ isRange: false })}>고정</button>
+          <button type="button" className={modeTabClass(row.isRange)} onClick={() => onChange({ isRange: true })}>범위</button>
         </div>
+
+        {/* 용량 입력 — 고정 또는 범위 */}
+        {row.isRange ? (
+          <div className="flex shrink-0 items-center gap-1">
+            <Input
+              variant="sm"
+              type="number"
+              value={row.amountMin}
+              onChange={(e) => onChange({ amountMin: e.target.value })}
+              className="w-16"
+              placeholder="최소"
+              step="0.01"
+            />
+            <span className="text-xs text-zinc-400">~</span>
+            <Input
+              variant="sm"
+              type="number"
+              value={row.amountMax}
+              onChange={(e) => onChange({ amountMax: e.target.value })}
+              className="w-16"
+              placeholder="최대"
+              step="0.01"
+            />
+            {isNew ? (
+              <Select variant="sm" value={row.unit || "g"} onChange={(e) => onChange({ unit: e.target.value })}>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="ea">ea</option>
+              </Select>
+            ) : (
+              row.unit && <span className="text-xs text-zinc-400">{row.unit}</span>
+            )}
+          </div>
+        ) : (
+          <div className="flex shrink-0 items-center gap-1">
+            <Input
+              variant="sm"
+              type="number"
+              value={row.amount}
+              onChange={(e) => onChange({ amount: e.target.value })}
+              className="w-20"
+              placeholder="용량"
+              step="0.01"
+            />
+            {isNew ? (
+              <Select variant="sm" value={row.unit || "g"} onChange={(e) => onChange({ unit: e.target.value })}>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="ea">ea</option>
+              </Select>
+            ) : (
+              row.unit && <span className="text-xs text-zinc-400">{row.unit}</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

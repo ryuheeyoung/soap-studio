@@ -6,7 +6,7 @@ import { useSessionStore } from "@/stores/session";
 import { calculateRequirements, filterMoldsForRecipe } from "@/lib/calculate";
 import type { Recipe, Ingredient, Mold, IngredientCategory } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
-import { Button, Card } from "@soap-studio/ui";
+import { Button, Card, Stepper } from "@soap-studio/ui";
 
 interface Props {
   recipes: Recipe[];
@@ -27,6 +27,8 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
   const [copied, setCopied] = useState(false);
   // 레시피별 선택된 몰드 ID
   const [moldSelections, setMoldSelections] = useState<Record<string, string | null>>({});
+  // "recipeId:ingredientId" → 범위 재료 편집 중 임시 문자열 (빈값·중간값 허용)
+  const [editingAmounts, setEditingAmounts] = useState<Record<string, string>>({});
   // 레시피 ID → Recipe 조회용 맵
   const recipeMap = new Map(recipes.map((r) => [r.id, r]));
   // 재료 ID → Ingredient 조회용 맵
@@ -131,6 +133,23 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
             recipe?.substitutes.map((s) => [s.originalIngredientId, s]) ?? []
           );
 
+          /**
+           * @function
+           * @description 배율 스테퍼 변경 핸들러
+           * @param {number} v - 변경된 배율값
+           */
+          function handleScaleChange(v: number) {
+            setScale(item.recipeId, v);
+          }
+
+          /**
+           * @function
+           * @description 레시피 카드 삭제 핸들러
+           */
+          function handleRemoveRecipe() {
+            removeRecipe(item.recipeId);
+          }
+
           return (
             <li key={item.recipeId}>
               <Card borderColor={hasShortage ? "border-red-200 dark:border-red-900" : undefined}>
@@ -141,37 +160,20 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                 </span>
 
                 {/* 배율 조정 */}
-                <div className="flex items-center gap-1.5 text-sm">
-                  <button
-                    onClick={() =>
-                      setScale(
-                        item.recipeId,
-                        Math.max(0.5, Math.round((item.scale - 0.5) * 10) / 10)
-                      )
-                    }
-                    className="flex h-6 w-6 items-center justify-center rounded border border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                  >
-                    −
-                  </button>
-                  <span className="w-10 text-center tabular-nums text-zinc-800 dark:text-zinc-200">
-                    ×{item.scale}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setScale(item.recipeId, Math.round((item.scale + 0.5) * 10) / 10)
-                    }
-                    className="flex h-6 w-6 items-center justify-center rounded border border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                  >
-                    +
-                  </button>
-                </div>
+                <Stepper
+                  value={item.scale}
+                  onChange={handleScaleChange}
+                  min={0.5}
+                  step={0.5}
+                  format={(v) => `×${v}`}
+                />
 
                 <span className="w-14 text-right text-xs tabular-nums text-zinc-400">
                   {effectiveBatchSize}g
                 </span>
 
                 <button
-                  onClick={() => removeRecipe(item.recipeId)}
+                  onClick={handleRemoveRecipe}
                   className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                 >
                   <X size={14} />
@@ -209,6 +211,73 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                       // 오버라이드 여부 (리셋 버튼 표시 기준)
                       const isOverridden = item.amountOverrides?.[originalId] != null;
 
+                      // 범위 재료 편집 키
+                      const amountKey = `${item.recipeId}:${originalId}`;
+
+                      /**
+                       * @function
+                       * @description 범위 재료 input onChange — 편집 중 임시 문자열만 로컬 상태에 저장
+                       * @param {string} value - 입력된 문자열 값
+                       */
+                      function handleAmountChange(value: string) {
+                        setEditingAmounts((prev) => ({ ...prev, [amountKey]: value }));
+                      }
+
+                      /**
+                       * @function
+                       * @description 범위 재료 input onBlur — min/max 기준으로 클램핑 후 스토어에 저장
+                       */
+                      function handleAmountBlur() {
+                        const raw = editingAmounts[amountKey];
+                        if (raw === undefined) return;
+                        const minScaled = recipeIng!.amountMin! * item.scale;
+                        const maxScaled = recipeIng!.amountMax! * item.scale;
+                        const val = parseFloat(raw);
+                        // 빈값·NaN·min 미만 → min / max 초과 → max / 범위 내 → 그대로
+                        const finalVal = (isNaN(val) || val < minScaled)
+                          ? minScaled
+                          : val > maxScaled
+                          ? maxScaled
+                          : val;
+                        setAmountOverride(
+                          item.recipeId,
+                          originalId,
+                          Math.round((finalVal / item.scale) * 100) / 100
+                        );
+                        setEditingAmounts((prev) => {
+                          const next = { ...prev };
+                          delete next[amountKey];
+                          return next;
+                        });
+                      }
+
+                      /**
+                       * @function
+                       * @description 범위 재료 오버라이드 리셋 — onBlur 발동 방지 후 기본값 복원
+                       * @param {React.MouseEvent} e - 마우스 이벤트 (preventDefault로 blur 차단)
+                       */
+                      function handleAmountReset(e: React.MouseEvent) {
+                        e.preventDefault();
+                        setAmountOverride(item.recipeId, originalId, null);
+                        setEditingAmounts((prev) => {
+                          const next = { ...prev };
+                          delete next[amountKey];
+                          return next;
+                        });
+                      }
+
+                      /**
+                       * @function
+                       * @description 대체재료 토글 — 활성 중이면 원래 재료로, 비활성이면 대체 재료로 전환
+                       */
+                      function handleSubstituteToggle() {
+                        setSubstitute(
+                          item.recipeId,
+                          originalId,
+                          isSubstituteActive ? null : substituteDef!.substituteIngredientId
+                        );
+                      }
+
                       return (
                         <li key={r.ingredientId} className="flex flex-col gap-1">
                           {/* 재료명 + 소요량/재고 */}
@@ -228,30 +297,36 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                             <div className="flex shrink-0 items-center gap-1">
                               {/* 범위 재료: 필요량을 직접 입력 가능한 input으로 표시 */}
                               {isRange && recipeIng ? (
-                                <input
-                                  type="number"
-                                  value={r.required}
-                                  min={recipeIng.amountMin! * item.scale}
-                                  max={recipeIng.amountMax! * item.scale}
-                                  step={1}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    if (!isNaN(val) && val > 0) {
-                                      setAmountOverride(
-                                        item.recipeId,
-                                        originalId,
-                                        Math.round((val / item.scale) * 100) / 100
-                                      );
-                                    }
-                                  }}
-                                  className={`w-12 bg-transparent text-right text-xs tabular-nums focus:outline-none focus:border-b focus:border-zinc-400 dark:focus:border-zinc-500 ${
-                                    r.isSufficient
-                                      ? isOverridden
-                                        ? "text-zinc-600 dark:text-zinc-300"
-                                        : "text-zinc-400 dark:text-zinc-500"
-                                      : "font-semibold text-red-500"
-                                  }`}
-                                />
+                                <div className="relative flex items-center">
+                                  <input
+                                    type="number"
+                                    value={editingAmounts[amountKey] ?? r.required}
+                                    min={recipeIng.amountMin! * item.scale}
+                                    max={recipeIng.amountMax! * item.scale}
+                                    step={1}
+                                    onChange={(e) => handleAmountChange(e.target.value)}
+                                    onBlur={handleAmountBlur}
+                                    className={`w-16 rounded border border-zinc-200 py-1 pl-2 pr-5 text-right text-xs tabular-nums outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                                      !r.isSufficient
+                                        ? "font-semibold text-red-500"
+                                        : isOverridden
+                                        ? "font-medium text-zinc-700 dark:text-zinc-200"
+                                        : "text-zinc-500 dark:text-zinc-400"
+                                    }`}
+                                  />
+                                  {/* 오버라이드 중일 때 input 내부 리셋 버튼 */}
+                                  {isOverridden && (
+                                    <button
+                                      type="button"
+                                      tabIndex={-1}
+                                      aria-label="기본값으로 되돌리기"
+                                      onMouseDown={handleAmountReset}
+                                      className="absolute right-1.5 text-[10px] text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+                                    >
+                                      ×
+                                    </button>
+                                  )}
+                                </div>
                               ) : (
                                 <span
                                   className={`text-xs tabular-nums ${
@@ -271,17 +346,6 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                               >
                                 {r.inStock}{r.unit}
                               </span>
-                              {/* 오버라이드 중일 때 리셋 버튼 */}
-                              {isOverridden && (
-                                <button
-                                  type="button"
-                                  onClick={() => setAmountOverride(item.recipeId, originalId, null)}
-                                  className="text-[10px] text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
-                                  title="기본값으로 되돌리기"
-                                >
-                                  ↺
-                                </button>
-                              )}
                             </div>
                           </div>
 
@@ -296,13 +360,7 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                           {substituteDef && substituteName && (
                             <button
                               type="button"
-                              onClick={() =>
-                                setSubstitute(
-                                  item.recipeId,
-                                  originalId,
-                                  isSubstituteActive ? null : substituteDef.substituteIngredientId
-                                )
-                              }
+                              onClick={handleSubstituteToggle}
                               className={`self-start rounded-full border px-2 py-0.5 text-[11px] transition ${
                                 isSubstituteActive
                                   ? "border-zinc-600 bg-zinc-700 text-white dark:border-zinc-400 dark:bg-zinc-200 dark:text-zinc-900"
@@ -325,17 +383,24 @@ export default function SessionPanel({ recipes, ingredients, molds }: Props) {
                         {moldOptions.map(({ molds: optionMolds, cellsMap, isAvailable }) => {
                           const optionKey = optionMolds.map((m) => m.id).join("+");
                           const isSelected = selectedMoldId === optionKey;
+
+                          /**
+                           * @function
+                           * @description 몰드 옵션 선택/해제 토글 핸들러
+                           */
+                          function handleMoldSelect() {
+                            setMoldSelections((prev) => ({
+                              ...prev,
+                              [item.recipeId]: isSelected ? null : optionKey,
+                            }));
+                          }
+
                           return (
                             <button
                               key={optionKey}
                               type="button"
                               disabled={!isAvailable && !isSelected}
-                              onClick={() =>
-                                setMoldSelections((prev) => ({
-                                  ...prev,
-                                  [item.recipeId]: isSelected ? null : optionKey,
-                                }))
-                              }
+                              onClick={handleMoldSelect}
                               className={`rounded-full border px-2.5 py-0.5 text-xs transition ${
                                 isSelected
                                   ? "border-zinc-700 bg-zinc-800 text-white dark:border-zinc-300 dark:bg-zinc-100 dark:text-zinc-900"

@@ -14,6 +14,8 @@ interface IngredientPayload {
   newIngredientName?: string;
   newIngredientUnit?: string;
   fixedAmount?: number;
+  amountMin?: number;
+  amountMax?: number;
   isOptional: boolean;
 }
 
@@ -53,6 +55,8 @@ async function resolveIngredients(payload: IngredientPayload[]): Promise<RecipeI
       const resolved: RecipeIngredientInput = {
         ingredientId,
         fixedAmount: item.fixedAmount,
+        amountMin: item.amountMin,
+        amountMax: item.amountMax,
         isOptional: item.isOptional,
       };
       return resolved;

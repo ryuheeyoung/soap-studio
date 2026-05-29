@@ -1,6 +1,6 @@
 # Soap Studio — 요구사항 정의
 
-> 최종 업데이트: 2026-05-27
+> 최종 업데이트: 2026-05-21
 > 프로젝트의 핵심 요구사항과 현재 구현 상태 정리 기준 문서.
 
 ---
@@ -39,7 +39,6 @@ soap-studio/
 │   ├── admin/     관리자 앱 — 레시피·재료·몰드 CRUD, 재고 조정
 │   └── web/       사용자 앱 — 레시피 열람, 계산기
 ├── packages/
-│   ├── api/       tRPC 라우터 (@soap-studio/api)
 │   ├── db/        Drizzle ORM 스키마 & 쿼리 (Neon PostgreSQL)
 │   └── types/     공유 TypeScript 타입
 └── docs/          요구사항, 테스트 가이드 등 기획 문서
@@ -47,13 +46,12 @@ soap-studio/
 
 ### DB 접근 권한 분리
 
-| 앱 / 패키지 | DB 롤 | 권한 |
-|------------|-------|------|
+| 앱 | DB 롤 | 권한 |
+|----|-------|------|
 | `apps/admin` | `neondb_owner` | 읽기 + 쓰기 (full access) |
-| `packages/api` (tRPC) | `web_reader` | 읽기 전용 |
+| `apps/web` | `web_reader` | 읽기 전용 |
 
-> `apps/web`은 DB에 직접 접근하지 않음. tRPC Route Handler(`packages/api`)를 경유하여 데이터 조회.  
-> 향후 멀티유저 지원 시 tRPC context에 인증 미들웨어 추가 예정.
+> 향후 멀티유저 지원 시 web 앱에도 인증 기반 쓰기 권한 추가 예정.
 
 ---
 
@@ -123,7 +121,6 @@ ingredient_purchase_options
 
 | 항목 | 우선순위 | 비고 |
 |------|---------|------|
-| tRPC 전환 (web 데이터 페칭) | ✅ 완료 | packages/api + TanStack Query CSR |
-| Vercel 배포 | ✅ 완료 | [soap.zzirong.dev](https://soap.zzirong.dev) / [admin-soap.zzirong.dev](https://admin-soap.zzirong.dev) |
 | 멀티유저 전환 | 🔴 높음 | 인증(Clerk) + 스키마 user_id 격리 — 별도 마일스톤 |
+| Vercel 배포 | ✅ 완료 | [soap.zzirong.dev](https://soap.zzirong.dev) / [admin-soap.zzirong.dev](https://admin-soap.zzirong.dev) |
 | E2E 테스트 (Playwright) | 🟢 낮음 | 계산기 핵심 플로우 위주, 앱 안정화 후 도입 |
