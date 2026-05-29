@@ -6,7 +6,7 @@ import { useSessionStore } from "@/stores/session";
 import { calculateRequirements } from "@/lib/calculate";
 import type { Recipe, Ingredient, IngredientCategory, PurchaseOption } from "@soap-studio/types";
 import { INGREDIENT_CATEGORY_LABELS } from "@soap-studio/types";
-import { AlertPanel, Button } from "@soap-studio/ui";
+import { AlertPanel, Button, Stepper } from "@soap-studio/ui";
 
 // 부족량을 최소량으로 커버하는 최적 옵션
 function findBestOption(options: PurchaseOption[], shortage: number): PurchaseOption | null {
@@ -165,31 +165,12 @@ export default function ResultPanel({ recipes, ingredients }: Props) {
                   {sel && selectedOpt && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-zinc-400">수량</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(r.ingredientId, sel.optionId, sel.qty - 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="number"
-                          min={1}
-                          value={sel.qty}
-                          onChange={(e) =>
-                            handleQtyChange(r.ingredientId, sel.optionId, parseInt(e.target.value) || 1)
-                          }
-                          className="w-12 rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-center text-xs tabular-nums dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(r.ingredientId, sel.optionId, sel.qty + 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <Stepper
+                        value={sel.qty}
+                        onChange={(v) => handleQtyChange(r.ingredientId, sel.optionId, v)}
+                        min={1}
+                        editable
+                      />
                       <span className="text-xs text-zinc-400">개</span>
                       <span className="ml-auto text-xs font-medium text-zinc-600 dark:text-zinc-300">
                         +{totalAdd}{r.unit}

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
 import { createRecipe, updateRecipe, deleteRecipe } from "@soap-studio/db/queries/recipes";
 import type { RecipeInput, RecipeIngredientInput, RecipeSubstituteInput } from "@soap-studio/db/queries/recipes";
 import { createIngredient } from "@soap-studio/db/queries/ingredients";
@@ -13,6 +14,8 @@ interface IngredientPayload {
   newIngredientName?: string;
   newIngredientUnit?: string;
   fixedAmount?: number;
+  amountMin?: number;
+  amountMax?: number;
   isOptional: boolean;
 }
 
@@ -52,6 +55,8 @@ async function resolveIngredients(payload: IngredientPayload[]): Promise<RecipeI
       const resolved: RecipeIngredientInput = {
         ingredientId,
         fixedAmount: item.fixedAmount,
+        amountMin: item.amountMin,
+        amountMax: item.amountMax,
         isOptional: item.isOptional,
       };
       return resolved;
@@ -154,6 +159,7 @@ export async function createRecipeAction(formData: FormData) {
   await createRecipe(data);
   revalidatePath("/recipes");
   revalidatePath("/ingredients");
+
   redirect("/recipes");
 }
 
@@ -176,6 +182,7 @@ export async function updateRecipeAction(id: string, formData: FormData) {
   await updateRecipe(id, data);
   revalidatePath("/recipes");
   revalidatePath("/ingredients");
+
   redirect("/recipes");
 }
 
@@ -187,4 +194,5 @@ export async function updateRecipeAction(id: string, formData: FormData) {
 export async function deleteRecipeAction(id: string) {
   await deleteRecipe(id);
   revalidatePath("/recipes");
+
 }
