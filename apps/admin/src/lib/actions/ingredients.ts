@@ -1,20 +1,22 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
 import {
-  createIngredient,
-  updateIngredient,
-  deleteIngredient,
   batchAdjustStock,
   batchDeductStock,
-} from "@soap-studio/db/queries/ingredients";
-import type { Ingredient } from "@soap-studio/types";
-import type { PurchaseOptionInput } from "@soap-studio/db/queries/ingredients";
+  createIngredient,
+  deleteIngredient,
+  updateIngredient,
+} from '@soap-studio/db/queries/ingredients';
+
+import type { PurchaseOptionInput } from '@soap-studio/db/queries/ingredients';
+import type { Ingredient } from '@soap-studio/types';
 
 // FormData의 purchaseOptions JSON 문자열을 파싱해 입력 배열로 변환
 function parsePurchaseOptions(formData: FormData): PurchaseOptionInput[] {
-  const raw = formData.get("purchaseOptions") as string;
+  const raw = formData.get('purchaseOptions') as string;
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw) as { label: string; size: string }[];
@@ -33,17 +35,18 @@ function parsePurchaseOptions(formData: FormData): PurchaseOptionInput[] {
  */
 export async function createIngredientAction(formData: FormData) {
   const data = {
-    name: formData.get("name") as string,
-    category: formData.get("category") as Ingredient["category"],
-    unit: formData.get("unit") as Ingredient["unit"],
-    stock: parseFloat(formData.get("stock") as string) || 0,
-    memo: (formData.get("memo") as string) || undefined,
+    name: formData.get('name') as string,
+    category: formData.get('category') as Ingredient['category'],
+    unit: formData.get('unit') as Ingredient['unit'],
+    stock: parseFloat(formData.get('stock') as string) || 0,
+    memo: (formData.get('memo') as string) || undefined,
     purchaseOptions: parsePurchaseOptions(formData),
   };
 
   await createIngredient(data);
-  revalidatePath("/ingredients");
-  redirect("/ingredients");
+  revalidatePath('/ingredients');
+
+  redirect('/ingredients');
 }
 
 /**
@@ -54,17 +57,18 @@ export async function createIngredientAction(formData: FormData) {
  */
 export async function updateIngredientAction(id: string, formData: FormData) {
   const data = {
-    name: formData.get("name") as string,
-    category: formData.get("category") as Ingredient["category"],
-    unit: formData.get("unit") as Ingredient["unit"],
-    stock: parseFloat(formData.get("stock") as string) || 0,
-    memo: (formData.get("memo") as string) || undefined,
+    name: formData.get('name') as string,
+    category: formData.get('category') as Ingredient['category'],
+    unit: formData.get('unit') as Ingredient['unit'],
+    stock: parseFloat(formData.get('stock') as string) || 0,
+    memo: (formData.get('memo') as string) || undefined,
     purchaseOptions: parsePurchaseOptions(formData),
   };
 
   await updateIngredient(id, data);
-  revalidatePath("/ingredients");
-  redirect("/ingredients");
+  revalidatePath('/ingredients');
+
+  redirect('/ingredients');
 }
 
 /**
@@ -74,7 +78,7 @@ export async function updateIngredientAction(id: string, formData: FormData) {
  */
 export async function deleteIngredientAction(id: string) {
   await deleteIngredient(id);
-  revalidatePath("/ingredients");
+  revalidatePath('/ingredients');
 }
 
 /**
@@ -83,10 +87,12 @@ export async function deleteIngredientAction(id: string) {
  * @param {{ ingredientId: string; add: number }[]} items - 재료 ID와 추가량 목록
  */
 export async function batchAdjustStockAction(
-  items: { ingredientId: string; add: number }[]
+  items: { ingredientId: string; add: number }[],
 ) {
-  await batchAdjustStock(items.map(({ ingredientId, add }) => ({ id: ingredientId, add })));
-  revalidatePath("/ingredients");
+  await batchAdjustStock(
+    items.map(({ ingredientId, add }) => ({ id: ingredientId, add })),
+  );
+  revalidatePath('/ingredients');
 }
 
 /**
@@ -95,8 +101,10 @@ export async function batchAdjustStockAction(
  * @param {{ ingredientId: string; deduct: number }[]} items - 재료 ID와 차감량 목록
  */
 export async function batchDeductStockAction(
-  items: { ingredientId: string; deduct: number }[]
+  items: { ingredientId: string; deduct: number }[],
 ) {
-  await batchDeductStock(items.map(({ ingredientId, deduct }) => ({ id: ingredientId, deduct })));
-  revalidatePath("/ingredients");
+  await batchDeductStock(
+    items.map(({ ingredientId, deduct }) => ({ id: ingredientId, deduct })),
+  );
+  revalidatePath('/ingredients');
 }
