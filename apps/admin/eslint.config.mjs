@@ -18,7 +18,7 @@ const eslintConfig = defineConfig([
   {
     rules: {
       // _ 접두사 변수는 unused-vars 경고에서 제외 (AGENTS.md 컨벤션)
-      "@typescript-eslint/no-unused-vars": ["warn", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }],
     },
   },
 ]);
