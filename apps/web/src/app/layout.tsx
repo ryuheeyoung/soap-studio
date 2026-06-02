@@ -1,30 +1,33 @@
-import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
-import BottomNav from "@/components/layout/BottomNav";
-import { TRPCProvider } from "@/lib/trpc/provider";
-import "./globals.css";
+import { Geist } from 'next/font/google';
+
+import BottomNav from '@/components/layout/BottomNav';
+import { TRPCProvider } from '@/lib/trpc/provider';
+
+import type { Metadata, Viewport } from 'next';
+
+import './globals.css';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Soap Studio",
-  description: "수제비누 레시피 & 재료 관리",
-  manifest: "/manifest.json",
+  title: 'Soap Studio',
+  description: '수제비누 레시피 & 재료 관리',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Soap Studio",
+    statusBarStyle: 'default',
+    title: 'Soap Studio',
   },
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#18181b",
+  themeColor: '#18181b',
 };
 
 /**

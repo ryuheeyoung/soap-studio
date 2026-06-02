@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc/client";
-import CalculatorView from "@/components/calculator/CalculatorView";
+import CalculatorView from '@/components/calculator/CalculatorView';
+import { trpc } from '@/lib/trpc/client';
 
 /**
  * @component
@@ -13,10 +13,6 @@ export default function CalculatorPage() {
   const { data: molds = [] } = trpc.molds.getAll.useQuery();
 
   return (
-    <CalculatorView
-      recipes={recipes}
-      ingredients={ingredients}
-      molds={molds}
-    />
+    <CalculatorView recipes={recipes} ingredients={ingredients} molds={molds} />
   );
 }

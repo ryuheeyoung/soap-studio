@@ -1,10 +1,15 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
-import { createMold, updateMold, deleteMold } from "@soap-studio/db/queries/molds";
-import type { Mold } from "@soap-studio/types";
+import {
+  createMold,
+  deleteMold,
+  updateMold,
+} from '@soap-studio/db/queries/molds';
+
+import type { Mold } from '@soap-studio/types';
 
 /**
  * @function
@@ -13,17 +18,17 @@ import type { Mold } from "@soap-studio/types";
  */
 export async function createMoldAction(formData: FormData) {
   const data = {
-    name: formData.get("name") as string,
-    shape: formData.get("shape") as Mold["shape"],
-    weightPerCell: parseFloat(formData.get("weightPerCell") as string),
-    cellCount: parseInt(formData.get("cellCount") as string, 10),
-    memo: (formData.get("memo") as string) || undefined,
+    name: formData.get('name') as string,
+    shape: formData.get('shape') as Mold['shape'],
+    weightPerCell: parseFloat(formData.get('weightPerCell') as string),
+    cellCount: parseInt(formData.get('cellCount') as string, 10),
+    memo: (formData.get('memo') as string) || undefined,
   };
 
   await createMold(data);
-  revalidatePath("/molds");
+  revalidatePath('/molds');
 
-  redirect("/molds");
+  redirect('/molds');
 }
 
 /**
@@ -34,17 +39,17 @@ export async function createMoldAction(formData: FormData) {
  */
 export async function updateMoldAction(id: string, formData: FormData) {
   const data = {
-    name: formData.get("name") as string,
-    shape: formData.get("shape") as Mold["shape"],
-    weightPerCell: parseFloat(formData.get("weightPerCell") as string),
-    cellCount: parseInt(formData.get("cellCount") as string, 10),
-    memo: (formData.get("memo") as string) || undefined,
+    name: formData.get('name') as string,
+    shape: formData.get('shape') as Mold['shape'],
+    weightPerCell: parseFloat(formData.get('weightPerCell') as string),
+    cellCount: parseInt(formData.get('cellCount') as string, 10),
+    memo: (formData.get('memo') as string) || undefined,
   };
 
   await updateMold(id, data);
-  revalidatePath("/molds");
+  revalidatePath('/molds');
 
-  redirect("/molds");
+  redirect('/molds');
 }
 
 /**
@@ -54,6 +59,5 @@ export async function updateMoldAction(id: string, formData: FormData) {
  */
 export async function deleteMoldAction(id: string) {
   await deleteMold(id);
-  revalidatePath("/molds");
-
+  revalidatePath('/molds');
 }

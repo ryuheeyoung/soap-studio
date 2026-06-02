@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc/client";
-import RecipesFilter from "@/components/recipes/RecipesFilter";
+import RecipesFilter from '@/components/recipes/RecipesFilter';
+import { trpc } from '@/lib/trpc/client';
 
 /**
  * @component
@@ -12,7 +12,9 @@ export default function RecipesPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">레시피</h1>
+      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        레시피
+      </h1>
       <RecipesFilter recipes={recipes} />
     </div>
   );

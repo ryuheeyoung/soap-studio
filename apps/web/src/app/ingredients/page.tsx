@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { trpc } from "@/lib/trpc/client";
-import IngredientsFilter from "@/components/ingredients/IngredientsFilter";
-import type { Recipe } from "@soap-studio/types";
+import IngredientsFilter from '@/components/ingredients/IngredientsFilter';
+import { trpc } from '@/lib/trpc/client';
+
+import type { Recipe } from '@soap-studio/types';
 
 /**
  * @function
@@ -35,8 +36,13 @@ export default function IngredientsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">재료</h1>
-      <IngredientsFilter ingredients={ingredients} minRequiredMap={minRequiredMap} />
+      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        재료
+      </h1>
+      <IngredientsFilter
+        ingredients={ingredients}
+        minRequiredMap={minRequiredMap}
+      />
     </div>
   );
 }

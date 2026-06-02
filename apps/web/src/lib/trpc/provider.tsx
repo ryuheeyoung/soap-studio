@@ -1,10 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import superjson from "superjson";
-import { trpc } from "./client";
+import { useState } from 'react';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { httpBatchLink } from '@trpc/client';
+import superjson from 'superjson';
+
+import { trpc } from './client';
 
 /**
  * @function
@@ -12,9 +14,9 @@ import { trpc } from "./client";
  * @returns {string} tRPC 엔드포인트 베이스 URL
  */
 function getBaseUrl() {
-  if (typeof window !== "undefined") return "";
+  if (typeof window !== 'undefined') return '';
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+  return 'http://localhost:3000';
 }
 
 /**
@@ -33,7 +35,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
             refetchOnWindowFocus: true,
           },
         },
-      })
+      }),
   );
 
   const [trpcClient] = useState(() =>
@@ -44,7 +46,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
           transformer: superjson,
         }),
       ],
-    })
+    }),
   );
 
   return (

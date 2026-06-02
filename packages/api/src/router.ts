@@ -1,7 +1,7 @@
-import { router } from "./trpc";
-import { recipesRouter } from "./routers/recipes";
-import { ingredientsRouter } from "./routers/ingredients";
-import { moldsRouter } from "./routers/molds";
+import { ingredientsRouter } from './routers/ingredients';
+import { moldsRouter } from './routers/molds';
+import { recipesRouter } from './routers/recipes';
+import { router } from './trpc';
 
 /**
  * @description 전체 tRPC 앱 라우터 — 각 도메인 라우터를 조합
