@@ -1,0 +1,27 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "printWidth": 80,
+  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+  "importOrder": [
+    "^react$",
+    "^react/(.*)$",
+    "^next$",
+    "^next/(.*)$",
+    "",
+    "<THIRD_PARTY_MODULES>",
+    "",
+    "^@soap-studio/(.*)$",
+    "",
+    "^@/(.*)$",
+    "",
+    "^\\.(.*)$",
+    "",
+    "<TYPES>",
+    "",
+    "^.+\\.css$"
+  ],
+  "importOrderTypeScriptVersion": "5.0.0"
+}
